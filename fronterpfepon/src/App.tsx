@@ -3,6 +3,7 @@ import { useState } from "react";
 import Navbar from "./components/Generic/Navbar.tsx";
 import LoginPage from "./landing/login/loginPage.tsx";
 import HomePage from "./landing/home/homePage.tsx";
+import ResetPasswordPage from "./landing/reset-password/resetPasswordPage.tsx";
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -25,6 +26,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/home" element={<HomePage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Routes>
       </div>
     </Router>
