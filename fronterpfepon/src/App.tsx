@@ -4,6 +4,7 @@ import Navbar from "./components/Generic/Navbar.tsx";
 import LoginPage from "./landing/login/loginPage.tsx";
 import HomePage from "./landing/home/homePage.tsx";
 import ResetPasswordPage from "./landing/reset-password/resetPasswordPage.tsx";
+import HelpPage from "./landing/help/helpPage.tsx";
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -27,6 +28,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/help" element={<HelpPage />} />
         </Routes>
       </div>
     </Router>
