@@ -1,8 +1,6 @@
-import React from "react";
 import Questions from "./components/Questions";
 import questionsBank from "../../../public/data/dataQuestions.json";
 import glosaryBank from "../../../public/data/dataGlosary.json";
-import MyIcon from "../../components/Generic/MyIcon";
 import { TypeFi } from "../../components/Generic/MyIcon";
 import GlosaryCard from "./components/GlosaryCard";
 
