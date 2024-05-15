@@ -10,6 +10,6 @@ namespace backendfepon
         {
         }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<User> Usuario { get; set; }
     }
 }
