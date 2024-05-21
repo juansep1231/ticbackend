@@ -10,5 +10,6 @@
         public DateTime EndDate { get; set; }
         public decimal Budget { get; set; }
         public string Status { get; set; }
+        public string BudgetStatus { get; set; }
     }
 }

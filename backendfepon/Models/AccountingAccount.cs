@@ -8,5 +8,6 @@
         public decimal CurrentValue { get; set; }
         public DateTime InitialBalanceDate { get; set; }
         public decimal InitialBalance { get; set; }
+        public string AccountingAccountStatus { get; set; }
     }
 }
