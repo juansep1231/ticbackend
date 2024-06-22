@@ -54,7 +54,7 @@ namespace backendfepon.Controllers
 
         // POST: api/Products
         [HttpPost]
-        public async Task<ActionResult<AdministrativeMember>> PostProduct(CreateUpdateAdministrativeMemberDTO administrativeMemberDTO)
+        public async Task<ActionResult<AdministrativeMember>> PostAdministrativeMember(CreateUpdateAdministrativeMemberDTO administrativeMemberDTO)
         {
             var administrativeMember = new AdministrativeMember
             {
@@ -70,7 +70,7 @@ namespace backendfepon.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, CreateUpdateAdministrativeMemberDTO updatedAdministrativeMember)
+        public async Task<IActionResult> PutAdministrativeMember(int id, CreateUpdateAdministrativeMemberDTO updatedAdministrativeMember)
         {
 
 

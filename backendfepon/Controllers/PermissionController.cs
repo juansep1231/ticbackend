@@ -54,7 +54,7 @@ namespace backendfepon.Controllers
 
         // POST: api/Permission
         [HttpPost]
-        public async Task<ActionResult<Permission>> PostEvent(CreateUpdatePermissionDTO permissionDTO)
+        public async Task<ActionResult<Permission>> PostPermission(CreateUpdatePermissionDTO permissionDTO)
         {
             var permission = new Permission
             {
@@ -72,7 +72,7 @@ namespace backendfepon.Controllers
 
         // PUT: api/Permission/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEvent(int id, CreateUpdatePermissionDTO updatedPermission)
+        public async Task<IActionResult> PutPermission(int id, CreateUpdatePermissionDTO updatedPermission)
         {
 
 

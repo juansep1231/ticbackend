@@ -22,7 +22,7 @@ namespace backendfepon.Controllers
         // GET: api/ContributionPlan
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ContributionPlanDTO>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<ContributionPlanDTO>>> GetContributionPlans()
         {
             var contributionPlans = await _context.ContributionPlans
             .Include(p => p.State)
@@ -58,7 +58,7 @@ namespace backendfepon.Controllers
 
         // POST: api/ContributionPlan
         [HttpPost]
-        public async Task<ActionResult<ContributionPlan>> PostProduct(CreateUpdateContributionPlanDTO contributionPlanDTO)
+        public async Task<ActionResult<ContributionPlan>> PostContirbutionPlan(CreateUpdateContributionPlanDTO contributionPlanDTO)
         {
             var contributionPlan = new ContributionPlan
             {
@@ -80,7 +80,7 @@ namespace backendfepon.Controllers
 
         // PUT: api/Products/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, CreateUpdateContributionPlanDTO updatedContributionPlan)
+        public async Task<IActionResult> PutContributionPlan(int id, CreateUpdateContributionPlanDTO updatedContributionPlan)
         {
 
 
