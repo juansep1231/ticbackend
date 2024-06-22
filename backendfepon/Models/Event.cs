@@ -15,5 +15,7 @@
         public string Hiring { get; set; }
 
         public State State { get; set; }
+
+        public Permission Permission { get; set; }
     }
 }

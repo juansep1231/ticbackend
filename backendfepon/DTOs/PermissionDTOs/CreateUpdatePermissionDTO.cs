@@ -1,13 +1,9 @@
-﻿namespace backendfepon.Models
+﻿namespace backendfepon.DTOs.PermissionDTOs
 {
-    public class Permission
+    public class CreateUpdatePermissionDTO
     {
-        public int Permission_Id { get; set; }
         public int Event_Id { get; set; }
         public string Request { get; set; }
         public string Request_Status { get; set; }
-
-        public Event Event { get; set; }
-
     }
 }
