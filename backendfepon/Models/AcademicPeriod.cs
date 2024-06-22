@@ -2,7 +2,10 @@
 {
     public class AcademicPeriod
     {
-        public int AcademicPeriodId { get; set; }
-        public string AcademicPeriodName { get; set; }
+        public int Academic_Period_Id { get; set; }
+        public string Academic_Period_Name { get; set; }
+
+        // Navigation property
+        public ICollection<ContributionPlan> ContributionPlans { get; set; }
     }
 }

@@ -2,10 +2,11 @@
 {
     public class User
     {
-        public int UserId { get; set; }
-        public int AdministrativeMemberId { get; set; }
-        public int StateId { get; set; }
-        public string Password { get; set; }
+        public int User_Id { get; set; }
+        public int State_Id { get; set; }
+        public AdministrativeMember AdministrativeMember { get; set; }
+
+        public State State { get; set; }
     }
 }
 
