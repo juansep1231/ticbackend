@@ -1,15 +1,10 @@
-﻿namespace backendfepon.Models
+﻿namespace backendfepon.DTOs.ResponsibleDTOs
 {
-    public class Responsible
+    public class CreateUpdateResponsibleDTO
     {
         public int Responsible_Id { get; set; }
         public int AdministrativeMember_Id { get; set; }
         public int Event_Id { get; set; }
         public string Event_Role { get; set; }
-        public Event Event { get; set; }
-        public AdministrativeMember AdministrativeMember { get; set; }
-
-     
-        
     }
 }

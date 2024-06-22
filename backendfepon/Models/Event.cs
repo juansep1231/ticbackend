@@ -17,5 +17,7 @@
         public State State { get; set; }
 
         public Permission Permission { get; set; }
+
+        public ICollection<Responsible> Responsibles { get; set; }
     }
 }

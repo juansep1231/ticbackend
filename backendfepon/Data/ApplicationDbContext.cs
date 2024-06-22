@@ -25,6 +25,9 @@ namespace backendfepon.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<Permission> Permissions { get; set; }
+        public DbSet<Responsible> Responsibles { get; set; }
+
+        
 
 
 
@@ -46,6 +49,7 @@ namespace backendfepon.Data
             modelBuilder.ApplyConfiguration(new AdministrativeMemberConfiguration());
             modelBuilder.ApplyConfiguration(new EventConfiguration());
             modelBuilder.ApplyConfiguration(new PermissionConfiguration());
+            modelBuilder.ApplyConfiguration(new ResponsibleConfiguration());
 
 
         }
