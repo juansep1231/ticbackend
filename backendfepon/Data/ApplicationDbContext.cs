@@ -26,6 +26,7 @@ namespace backendfepon.Data
         public DbSet<Event> Events { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<Responsible> Responsibles { get; set; }
+        public DbSet<EventIncome> EventIncomes { get; set; }
 
         
 
@@ -43,13 +44,14 @@ namespace backendfepon.Data
             modelBuilder.ApplyConfiguration(new CareerConfiguration());
             modelBuilder.ApplyConfiguration(new SemesterConfiguration());
             modelBuilder.ApplyConfiguration(new TransactionConfiguration());
-            modelBuilder.ApplyConfiguration(new  StudentConfiguration());
+            modelBuilder.ApplyConfiguration(new StudentConfiguration());
             modelBuilder.ApplyConfiguration(new ContributorConfiguration());
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new AdministrativeMemberConfiguration());
             modelBuilder.ApplyConfiguration(new EventConfiguration());
             modelBuilder.ApplyConfiguration(new PermissionConfiguration());
             modelBuilder.ApplyConfiguration(new ResponsibleConfiguration());
+            modelBuilder.ApplyConfiguration(new EventIncomeConfiguration());
 
 
         }

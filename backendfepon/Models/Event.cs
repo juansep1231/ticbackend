@@ -18,6 +18,7 @@
 
         public Permission Permission { get; set; }
 
+       public EventIncome EventIncome { get; set; }
         public ICollection<Responsible> Responsibles { get; set; }
     }
 }

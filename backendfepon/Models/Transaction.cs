@@ -14,6 +14,9 @@
 
             // Navigation properties
             public Contributor? Contributor { get; set; }
+            
+            public EventIncome EventIncome { get; set; }
+        
         
     }
 }
