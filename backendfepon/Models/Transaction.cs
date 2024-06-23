@@ -16,6 +16,8 @@
             public Contributor? Contributor { get; set; }
             
             public EventIncome EventIncome { get; set; }
+
+            public EventExpense EventExpense { get; set; }
         
         
     }

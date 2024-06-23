@@ -7,6 +7,7 @@
         public string Phone { get; set; }
         public string Email { get; set; }
 
- 
+        public ICollection<EventExpense> EventExpenses { get; set; }
+
     }
 }

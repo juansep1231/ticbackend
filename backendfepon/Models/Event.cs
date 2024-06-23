@@ -20,5 +20,7 @@
 
        public EventIncome EventIncome { get; set; }
         public ICollection<Responsible> Responsibles { get; set; }
+
+        public ICollection<EventExpense> EventExpenses { get; set; }
     }
 }

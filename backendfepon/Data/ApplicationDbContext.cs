@@ -27,12 +27,13 @@ namespace backendfepon.Data
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<Responsible> Responsibles { get; set; }
         public DbSet<EventIncome> EventIncomes { get; set; }
+        public DbSet<EventExpense> EventExpenses { get; set; }
+        public DbSet<Provider> Providers { get; set; }
 
         
 
 
-
-
+       
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
@@ -52,6 +53,9 @@ namespace backendfepon.Data
             modelBuilder.ApplyConfiguration(new PermissionConfiguration());
             modelBuilder.ApplyConfiguration(new ResponsibleConfiguration());
             modelBuilder.ApplyConfiguration(new EventIncomeConfiguration());
+            modelBuilder.ApplyConfiguration(new EventExpenseConfiguration());
+            modelBuilder.ApplyConfiguration(new ProviderConfiguration());
+
 
 
         }
