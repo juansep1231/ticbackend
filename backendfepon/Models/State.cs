@@ -2,7 +2,10 @@
 {
     public class State
     {
-        public int StateId { get; set; }
-        public string StateName { get; set; }
+        public int State_Id { get; set; }
+        public string State_Name { get; set; }
+
+        // Navigation property
+        public ICollection<Product> Products { get; set; }
     }
 }
