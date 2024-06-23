@@ -2,9 +2,12 @@
 {
     public class Permission
     {
-        public int PermissionId { get; set; }
-        public int EventId { get; set; }
+        public int Permission_Id { get; set; }
+        public int Event_Id { get; set; }
         public string Request { get; set; }
-        public string RequestStatus { get; set; }
+        public string Request_Status { get; set; }
+
+        public Event Event { get; set; }
+
     }
 }

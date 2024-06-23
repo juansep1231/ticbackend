@@ -2,10 +2,17 @@
 {
     public class EventExpense
     {
-        public int ExpenseId { get; set; }
-        public int TransactionId { get; set; }
-        public int EventId { get; set; }
-        public int ProviderId { get; set; }
-        public int ResponsibleId { get; set; }
+        public int Expense_Id { get; set; }
+        public int Transaction_Id { get; set; }
+        public int Event_Id { get; set; }
+        public int Responsible_Id { get; set; }
+
+        public ICollection<Provider> Providers { get; set; }
+
+        public Responsible Responsible { get; set; }
+
+        public Transaction Transaction { get; set; }
+
+        public Event Event { get; set; }
     }
 }
