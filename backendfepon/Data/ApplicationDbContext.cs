@@ -29,8 +29,10 @@ namespace backendfepon.Data
         public DbSet<EventIncome> EventIncomes { get; set; }
         public DbSet<EventExpense> EventExpenses { get; set; }
         public DbSet<Provider> Providers { get; set; }
+        public DbSet<AccountingAccount> AccountingAccounts { get; set; }
+        public DbSet<AccountType> AccountTypes { get; set; }
 
-        
+
 
 
        
@@ -55,6 +57,8 @@ namespace backendfepon.Data
             modelBuilder.ApplyConfiguration(new EventIncomeConfiguration());
             modelBuilder.ApplyConfiguration(new EventExpenseConfiguration());
             modelBuilder.ApplyConfiguration(new ProviderConfiguration());
+            modelBuilder.ApplyConfiguration(new AccountingAccountConfiguration());
+            modelBuilder.ApplyConfiguration(new AccountTypeConfiguration());
 
 
 

@@ -2,8 +2,10 @@
 {
     public class AccountType
     {
-        public int AccountTypeId { get; set; }
-        public int AccountId { get; set; }
-        public string AccountTypeName { get; set; }
+        public int Account_Type_Id { get; set; }
+        public int Account_Id { get; set; }
+        public string Account_Type_Name { get; set; }
+
+        public ICollection<AccountingAccount> AccountingAccounts{ get; set; }
     }
 }

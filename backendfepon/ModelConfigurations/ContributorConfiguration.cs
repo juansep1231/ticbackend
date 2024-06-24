@@ -14,7 +14,7 @@ namespace backendfepon.ModelConfigurations
             // Relationships
             modelBuilder.HasOne(cp => cp.Student)
                 .WithOne(c => c.Contributor)
-                .HasForeignKey<Student>(c => c.Contributor_Id);
+                .HasForeignKey<Contributor>(c => c.Contributor_Id);
 
             // Relationships
             modelBuilder.HasOne(cp => cp.ContributionPlan)
