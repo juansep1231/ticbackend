@@ -14,6 +14,16 @@ namespace backendfepon.ModelConfigurations
                 .WithOne(c => c.Transaction)
                 .HasForeignKey<Contributor>(t => t.Contributor_Id);
 
+            // Foreign key for OriginAccount
+            modelBuilder.HasOne(t => t.OriginAccount)
+                .WithMany(a => a.OriginTransactions)
+                .HasForeignKey(t => t.Origin_Account);
+
+            // Foreign key for DestinationAccount
+            modelBuilder.HasOne(t => t.DestinationAccount)
+                .WithMany(a => a.DestinationTransactions)
+                .HasForeignKey(t => t.Destination_Account);
+
 
         }
     }

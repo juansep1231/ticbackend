@@ -6,7 +6,6 @@
         public int Faculty_Id { get; set; }
         public int Career_Id { get; set; }
         public int Semester_Id { get; set; }
-        public int Contributor_Id { get; set; }
         public string First_Name { get; set; }
         public string Last_Name { get; set; }
         public DateTime Birth_Date { get; set; }

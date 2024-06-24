@@ -8,7 +8,6 @@
         public string Name { get; set; }
         public string Benefits { get; set; }
         public decimal Economic_Value { get; set; }
-        public string Academic_Period { get; set; }
 
         public State State { get; set; }
         public AcademicPeriod AcademicPeriod { get; set; }
