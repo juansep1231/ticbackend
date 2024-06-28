@@ -31,6 +31,12 @@ namespace backendfepon.Data
         public DbSet<Provider> Providers { get; set; }
         public DbSet<AccountingAccount> AccountingAccounts { get; set; }
         public DbSet<AccountType> AccountTypes { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<InventoryMovementType> InventoryMovementTypes { get; set; }
+        public DbSet<InventoryMovement> InventoryMovements { get; set; }
+        public DbSet<FinancialRequestState> FinancialRequestStates { get; set; }
+        public DbSet<FinancialRequest> FinancialRequests { get; set; }
+        public DbSet<Association> Associations { get; set; }
 
 
 
@@ -59,6 +65,11 @@ namespace backendfepon.Data
             modelBuilder.ApplyConfiguration(new ProviderConfiguration());
             modelBuilder.ApplyConfiguration(new AccountingAccountConfiguration());
             modelBuilder.ApplyConfiguration(new AccountTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+            modelBuilder.ApplyConfiguration(new InventoryMovementTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new InventoryMovementConfiguration());  
+            modelBuilder.ApplyConfiguration(new FinantialRequestStateConfiguration());
+            modelBuilder.ApplyConfiguration(new FinancialRequestConfiguration());
 
 
 

@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backendfepon.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class ResponsibleController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

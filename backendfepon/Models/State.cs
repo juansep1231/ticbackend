@@ -11,6 +11,7 @@
         public ICollection<User> Users { get; set; }
 
         public ICollection<Event> Events { get; set; }
+        public ICollection<Association> Associations { get; set; }
 
     }
 }

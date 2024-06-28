@@ -1,5 +1,6 @@
 ﻿using backendfepon.Data;
 using backendfepon.DTOs.ProductDTOs;
+using backendfepon.DTOs.TransactionDTOs;
 using backendfepon.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,8 @@ namespace backendfepon.Controllers
             //return await _context.Products.ToListAsync();
             var products = await _context.Products
             .Include(p => p.State)
+            .Include(p => p.Provider)
+            .Include(p => p.Category)
            .Select(p => new ProductDTO
            {
                Product_Id = p.Product_Id,
@@ -32,20 +35,38 @@ namespace backendfepon.Controllers
                Economic_Value = p.Economic_Value,
                Quantity = p.Quantity,
                Label = p.Label,
-               State_Name = p.State.State_Name
+               State_Name = p.State.State_Name,
+               Category_Name = p.Category.Description,
+               Provider_Name = p.Provider.Name
            })
            .ToListAsync();
 
-            // Print the products
-            PrintProducts(products);
             return Ok(products);
         }
 
         // GET: api/Products/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<ProductDTO>> GetProduct(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = await _context.Products
+             .Include(p => p.State)
+            .Include(p => p.Provider)
+            .Include(p => p.Category)
+             .Where(p => p.Product_Id == id)
+            .Select(p => new ProductDTO
+            {
+                Product_Id = p.Product_Id,
+                Name = p.Name,
+                Description = p.Description,
+                Economic_Value = p.Economic_Value,
+                Quantity = p.Quantity,
+                Label = p.Label,
+                State_Name = p.State.State_Name,
+                Category_Name = p.Category.Description,
+                Provider_Name = p.Provider.Name
+
+            })
+            .FirstOrDefaultAsync();
 
             if (product == null)
             {
@@ -62,11 +83,14 @@ namespace backendfepon.Controllers
             var product = new Product
             {
                 State_Id = productDTO.State_Id,
+                Category_Id = productDTO.Category_Id,
+                Provider_Id = productDTO.Provider_Id,
                 Name = productDTO.Name,
                 Description = productDTO.Description,
                 Economic_Value = productDTO.Economic_Value ?? 0,
                 Quantity = productDTO.Quantity,
-                Label = productDTO.Label
+                Label = productDTO.Label,
+                
             };
              _context.Products.Add(product);
             await _context.SaveChangesAsync();
@@ -83,17 +107,19 @@ namespace backendfepon.Controllers
 
             var product = await _context.Products.FindAsync(id);
 
-            if(product == null)
+            if (product == null)
             {
                 return BadRequest();
             }
 
             product.State_Id = updatedProduct.State_Id;
+            product.Provider_Id = updatedProduct.Provider_Id;
             product.Name = updatedProduct.Name;
             product.Description = updatedProduct.Description;
             product.Economic_Value = updatedProduct.Economic_Value ?? 0;
             product.Quantity = updatedProduct.Quantity;
             product.Label = updatedProduct.Label;
+            product.Category_Id = updatedProduct.Category_Id;
 
 
             _context.Entry(product).State = EntityState.Modified;
@@ -175,19 +201,6 @@ namespace backendfepon.Controllers
         }
 
 
-        private void PrintProducts(IEnumerable<ProductDTO> products)
-        {
-            foreach (var product in products)
-            {
-                System.Console.WriteLine($"Product ID: {product.Product_Id}");
-                System.Console.WriteLine($"Name: {product.Name}");
-                System.Console.WriteLine($"Description: {product.Description}");
-                System.Console.WriteLine($"Economic Value: {product.Economic_Value}");
-                System.Console.WriteLine($"Quantity: {product.Quantity}");
-                System.Console.WriteLine($"Label: {product.Label}");
-                System.Console.WriteLine($"State Name: {product.State_Name}");
-                System.Console.WriteLine(new string('-', 50)); // Separator for readability
-            }
-        }
+        
     }
 }
