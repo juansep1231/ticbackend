@@ -9,5 +9,7 @@
 
         public ICollection<EventExpense> EventExpenses { get; set; }
 
+        public ICollection<Product> Products { get; set; }
+
     }
 }

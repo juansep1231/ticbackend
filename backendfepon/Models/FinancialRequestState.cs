@@ -2,7 +2,9 @@
 {
     public class FinancialRequestState
     {
-        public int RequestStateId { get; set; }
-        public string StateDescription { get; set; }
+        public int Request_State_Id { get; set; }
+        public string State_Description { get; set; }
+
+        public ICollection<FinancialRequest> FinancialRequests { get; set; }
     }
 }

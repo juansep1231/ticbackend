@@ -11,5 +11,7 @@
         public Student Student { get; set; }
 
         public Responsible Responsible { get; set; }
+
+        public ICollection<FinancialRequest> FinancialRequests { get; set; }
     }
 }

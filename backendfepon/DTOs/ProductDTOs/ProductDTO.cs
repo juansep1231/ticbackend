@@ -4,6 +4,8 @@
     {
         public int Product_Id { get; set; }
 
+        public string Category_Name { get; set; }
+
         public string Name { get; set; } = null!;
 
         public string Description { get; set; } = null!;
@@ -14,6 +16,8 @@
 
         public string Label { get; set; } = null!;
 
-        public string State_Name { get; set; } 
+        public string State_Name { get; set; }
+
+        public string Provider_Name { get; set; }
     }
 }

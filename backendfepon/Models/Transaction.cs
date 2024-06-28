@@ -17,7 +17,10 @@
 
             public EventExpense EventExpense { get; set; }
             public AccountingAccount OriginAccount { get; set; }
-            public AccountingAccount DestinationAccount { get; set; }
+        public AccountingAccount DestinationAccount { get; set; }
+
+
+        public InventoryMovement InventoryMovement { get; set; }
 
     }
 }

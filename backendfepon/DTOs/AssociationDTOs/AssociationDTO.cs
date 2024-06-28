@@ -1,9 +1,9 @@
-﻿namespace backendfepon.Models
+﻿namespace backendfepon.DTOs.AssociationDTOs
 {
-    public class Association
+    public class AssociationDTO
     {
-        public int Association_Id { get; set; }
-        public int State_Id { get; set; }
+        public int AssociationId { get; set; }
+        public string State_Name { get; set; }
         public string Name { get; set; }
         public string Mission { get; set; }
         public string Vision { get; set; }
@@ -11,7 +11,5 @@
         public string Phone { get; set; }
         public string Email { get; set; }
         public string Address { get; set; }
-
-        public State State { get; set; }
     }
 }
