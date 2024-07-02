@@ -2,19 +2,18 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-/*namespace backendfepon.ModelConfigurations
+namespace backendfepon.ModelConfigurations
 {
-    public class AccountingAccountConfiguration : IEntityTypeConfiguration<AccountingAccount>
+    public class CAccountingAccountConfiguration : IEntityTypeConfiguration<CAccountingAccount>
     {
-        
-        public void Configure(EntityTypeBuilder<AccountingAccount> modelBuilder)
+        public void Configure(EntityTypeBuilder<CAccountingAccount> modelBuilder)
         {
             modelBuilder.ToTable("ACCOUNTING_ACCOUNT");
             modelBuilder.HasKey(p => p.Account_Id);
 
             // Relationships
             modelBuilder.HasOne(e => e.AccountType)
-                .WithMany(c => c.AccountingAccounts)
+                .WithMany(c => c.CAccountingAccounts)
                 .HasForeignKey(e => e.Account_Type_Id);
 
             modelBuilder.HasMany(a => a.OriginTransactions)
@@ -25,8 +24,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
             modelBuilder.HasMany(a => a.DestinationTransactions)
                 .WithOne(t => t.DestinationAccount)
                 .HasForeignKey(t => t.Destination_Account);
-  
+
 
         }
     }
-}*/
+}
