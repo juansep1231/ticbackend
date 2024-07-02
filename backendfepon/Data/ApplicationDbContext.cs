@@ -20,7 +20,6 @@ namespace backendfepon.Data
         public DbSet<Contributor> Contributors { get; set;}
         public DbSet<Transaction> Transactions { get; set;}
         public DbSet<Student> Students { get; set;}
-
         public DbSet<AdministrativeMember> AdministrativeMembers { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Event> Events { get; set; }
@@ -29,7 +28,7 @@ namespace backendfepon.Data
         public DbSet<EventIncome> EventIncomes { get; set; }
         public DbSet<EventExpense> EventExpenses { get; set; }
         public DbSet<Provider> Providers { get; set; }
-        public DbSet<AccountingAccount> AccountingAccounts { get; set; }
+        //public DbSet<AccountingAccount> AccountingAccounts { get; set; }
         public DbSet<AccountType> AccountTypes { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<InventoryMovementType> InventoryMovementTypes { get; set; }
@@ -37,11 +36,14 @@ namespace backendfepon.Data
         public DbSet<FinancialRequestState> FinancialRequestStates { get; set; }
         public DbSet<FinancialRequest> FinancialRequests { get; set; }
         public DbSet<Association> Associations { get; set; }
+        public DbSet<CAccountingAccount> CAccountinngAccounts { get; set; }
 
 
 
 
-       
+
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
@@ -63,13 +65,17 @@ namespace backendfepon.Data
             modelBuilder.ApplyConfiguration(new EventIncomeConfiguration());
             modelBuilder.ApplyConfiguration(new EventExpenseConfiguration());
             modelBuilder.ApplyConfiguration(new ProviderConfiguration());
-            modelBuilder.ApplyConfiguration(new AccountingAccountConfiguration());
+            //modelBuilder.ApplyConfiguration(new AccountingAccountConfiguration());
             modelBuilder.ApplyConfiguration(new AccountTypeConfiguration());
             modelBuilder.ApplyConfiguration(new CategoryConfiguration());
             modelBuilder.ApplyConfiguration(new InventoryMovementTypeConfiguration());
             modelBuilder.ApplyConfiguration(new InventoryMovementConfiguration());  
             modelBuilder.ApplyConfiguration(new FinantialRequestStateConfiguration());
             modelBuilder.ApplyConfiguration(new FinancialRequestConfiguration());
+            modelBuilder.ApplyConfiguration(new AssociationConfiguration());
+
+            //cypher
+            modelBuilder.ApplyConfiguration(new CAccountingAccountConfiguration());
 
 
 

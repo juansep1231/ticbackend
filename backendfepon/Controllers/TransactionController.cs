@@ -1,9 +1,13 @@
-﻿using backendfepon.Data;
+﻿using backendfepon.Cypher;
+using backendfepon.Data;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.DTOs.TransactionDTOs;
 using backendfepon.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace backendfepon.Controllers
 {
@@ -12,25 +16,33 @@ namespace backendfepon.Controllers
     public class TransactionController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public TransactionController(ApplicationDbContext context)
+        private readonly byte[]? _key;
+        private readonly byte[]? _iv;
+
+        public TransactionController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
+
+            _iv = Convert.FromBase64String(_configuration["AESConfig:IV"]);
+            _key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(_configuration["AESConfig:KEY"]));
         }
 
         // GET: api/Transactions
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TransactionDTO>>> GetTransactions()
         {
-
+            CypherAES cy =new CypherAES();
             var transactions = await _context.Transactions
             .Include(p => p.DestinationAccount)
            .Select(p => new TransactionDTO
            {
                Transaction_Id = p.Transaction_Id,
                Date = p.Date,
-               Origin_Account_Name = p.OriginAccount.Account_Name,
-               Destination_Account_Name = p.DestinationAccount.Account_Name,
+               Origin_Account_Name = cy.DecryptStringFromBytes_Aes(p.OriginAccount.Account_Name, _key, _iv) ,
+               Destination_Account_Name = cy.DecryptStringFromBytes_Aes(p.DestinationAccount.Account_Name, _key, _iv),
                Value = p.Value,
                Reason = p.Reason,
 
@@ -44,6 +56,7 @@ namespace backendfepon.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<TransactionDTO>> GetTransaction(int id)
         {
+            CypherAES cy = new CypherAES();
             var transaction = await _context.Transactions
             .Include(p => p.DestinationAccount)
             .Where(p => p.Transaction_Id == id)
@@ -51,8 +64,8 @@ namespace backendfepon.Controllers
            {
                Transaction_Id = p.Transaction_Id,
                Date = p.Date,
-               Origin_Account_Name = p.OriginAccount.Account_Name,
-               Destination_Account_Name = p.DestinationAccount.Account_Name,
+               Origin_Account_Name = cy.DecryptStringFromBytes_Aes(p.OriginAccount.Account_Name, _key, _iv),
+               Destination_Account_Name = cy.DecryptStringFromBytes_Aes(p.DestinationAccount.Account_Name, _key, _iv),
                Value = p.Value,
                Reason = p.Reason,
 
