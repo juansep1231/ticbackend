@@ -11,6 +11,7 @@ builder.Services.AddControllers();
 // Add services of EF Core.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DevelopConnection")));
+builder.Services.AddAutoMapper(typeof(Program)); 
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

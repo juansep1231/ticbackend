@@ -9,7 +9,7 @@ namespace backendfepon.ModelConfigurations
         public void Configure(EntityTypeBuilder<InventoryMovement> modelBuilder)
         {
             modelBuilder.ToTable("INVENTORY_MOVEMENT");
-            modelBuilder.HasKey(p => p.Inventory_Movement_Id);
+            modelBuilder.HasKey(p => p.Movement_Id);
             modelBuilder
                .HasOne(p => p.Product)
                .WithMany(s => s.InventoryMovements)

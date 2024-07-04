@@ -16,6 +16,22 @@ namespace backendfepon.ModelConfigurations
                 .WithOne(c => c.Student)
                 .HasForeignKey<AdministrativeMember>(e => e.Student_Id);
 
+            modelBuilder
+               .HasOne(p => p.Faculty)
+               .WithMany(s => s.Students)
+               .HasForeignKey(p => p.Faculty_Id);
+
+            modelBuilder
+              .HasOne(p => p.Career)
+              .WithMany(s => s.Students)
+              .HasForeignKey(p => p.Career_Id);
+
+            modelBuilder
+            .HasOne(p => p.Semester)
+            .WithMany(s => s.Students)
+            .HasForeignKey(p => p.Semester_Id);
+
+
         }
     }
 }

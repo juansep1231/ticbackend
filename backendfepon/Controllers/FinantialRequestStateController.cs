@@ -1,4 +1,5 @@
 ﻿using backendfepon.Data;
+using backendfepon.DTOs.AssociationDTOs;
 using backendfepon.DTOs.FinantialRequestStateDTOs;
 using backendfepon.DTOs.StateDTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -23,12 +24,30 @@ namespace backendfepon.Controllers
             var states = await _context.FinancialRequestStates
                 .Select(s => new FinantialRequestStateDTO
                 {
-                    Request_State_Id = s.Request_State_Id,
                     State_Description = s.State_Description
                 })
                 .ToListAsync();
 
             return Ok(states);
+        }
+
+        // GET: api/FinantialRequestState/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<FinantialRequestStateDTO>> GetFinantialState(int id)
+        {
+            var finantialRequestState = await _context.FinancialRequestStates
+            .Select(s => new FinantialRequestStateDTO
+            {
+                State_Description = s.State_Description
+            })
+            .FirstOrDefaultAsync();
+
+            if (finantialRequestState == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(finantialRequestState);
         }
     }
 }

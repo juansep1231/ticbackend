@@ -2,10 +2,8 @@
 {
     public class CreateUpdateProductDTO
     {
-        public int State_Id { get; set; }
 
-        public int Provider_Id { get; set; }
-        public int Category_Id { get; set; }
+        public string Category_Name { get; set; }
 
         public string Name { get; set; } = null!;
 
@@ -16,5 +14,9 @@
         public int Quantity { get; set; }
 
         public string Label { get; set; } = null!;
+
+        public string State_Name { get; set; }
+
+        public string Provider_Name { get; set; }
     }
 }

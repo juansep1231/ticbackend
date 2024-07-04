@@ -21,7 +21,6 @@ namespace backendfepon.Data
         public DbSet<Transaction> Transactions { get; set;}
         public DbSet<Student> Students { get; set;}
         public DbSet<AdministrativeMember> AdministrativeMembers { get; set; }
-        public DbSet<User> Users { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<Responsible> Responsibles { get; set; }
@@ -37,6 +36,8 @@ namespace backendfepon.Data
         public DbSet<FinancialRequest> FinancialRequests { get; set; }
         public DbSet<Association> Associations { get; set; }
         public DbSet<CAccountingAccount> CAccountinngAccounts { get; set; }
+        public DbSet<Faculty> Faculties { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
 
 
@@ -57,7 +58,6 @@ namespace backendfepon.Data
             modelBuilder.ApplyConfiguration(new TransactionConfiguration());
             modelBuilder.ApplyConfiguration(new StudentConfiguration());
             modelBuilder.ApplyConfiguration(new ContributorConfiguration());
-            modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new AdministrativeMemberConfiguration());
             modelBuilder.ApplyConfiguration(new EventConfiguration());
             modelBuilder.ApplyConfiguration(new PermissionConfiguration());
@@ -76,6 +76,8 @@ namespace backendfepon.Data
 
             //cypher
             modelBuilder.ApplyConfiguration(new CAccountingAccountConfiguration());
+            modelBuilder.ApplyConfiguration(new FacultyConfiguration());
+            modelBuilder.ApplyConfiguration(new RoleConfiguration());
 
 
 

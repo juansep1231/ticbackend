@@ -2,7 +2,9 @@
 {
     public class Faculty
     {
-        public int FacultyId { get; set; }
-        public string FacultyName { get; set; }
+        public int Faculty_Id { get; set; }
+        public string Faculty_Name { get; set; }
+
+        public ICollection<Student> Students { get; set; }
     }
 }

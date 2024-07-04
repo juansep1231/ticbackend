@@ -14,7 +14,7 @@ namespace backendfepon.ModelConfigurations
             // Relationships
             modelBuilder.HasOne(e => e.AdministrativeMember)
                 .WithOne(c => c.Responsible)
-                .HasForeignKey<Responsible>(e => e.Responsible_Id);
+                .HasForeignKey<Responsible>(e => e.Administrative_Member_Id);
 
             modelBuilder.HasOne(e => e.Event)
                         .WithMany(c => c.Responsibles)

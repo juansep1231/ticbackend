@@ -4,5 +4,8 @@
     {
         public int Semester_Id { get; set; }
         public string Semester_Name { get; set; }
+
+        public ICollection<Student> Students { get; set; }
+
     }
 }

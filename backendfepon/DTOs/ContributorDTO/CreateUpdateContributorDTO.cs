@@ -2,8 +2,8 @@
 {
     public class CreateUpdateContributorDTO
     {
-        public int Plan_Id { get; set; }
+        public string Plan_Name { get; set; }
         public int Transaction_Id { get; set; }
-        public int Student_Id { get; set; }
+        public string Student_Email { get; set; }
     }
 }

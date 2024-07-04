@@ -26,7 +26,6 @@ namespace backendfepon.Controllers
             var categories = await _context.Categories
                 .Select(c => new CategoryDTO
                 {
-                    Category_Id = c.Category_Id,
                     Description = c.Description
                 })
                 .ToListAsync();
@@ -41,7 +40,6 @@ namespace backendfepon.Controllers
             .Where(p => p.Category_Id == id)
            .Select(p => new CategoryDTO
            {
-               Category_Id = p.Category_Id,
                Description = p.Description
 
            })

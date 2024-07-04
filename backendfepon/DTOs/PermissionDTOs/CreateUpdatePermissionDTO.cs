@@ -2,7 +2,7 @@
 {
     public class CreateUpdatePermissionDTO
     {
-        public int Event_Id { get; set; }
+        public string Event_Name { get; set; }
         public string Request { get; set; }
         public string Request_Status { get; set; }
     }

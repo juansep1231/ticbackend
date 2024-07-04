@@ -1,6 +1,7 @@
 ﻿using backendfepon.Cypher;
 using backendfepon.Data;
 using backendfepon.DTOs.AccountingAccountDTOs;
+using backendfepon.DTOs.AccountTypeDTOs;
 using backendfepon.DTOs.EventDTOs;
 using backendfepon.DTOs.EventExpenseDTO;
 using backendfepon.DTOs.ProductDTOs;
@@ -8,6 +9,7 @@ using backendfepon.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -72,19 +74,47 @@ namespace backendfepon.Controllers
             return Ok(dAccounts);
         }
 
-        
-        // GET: api/AccountingAccount/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<CAccountingAccount>> GetAccountingAccount(int id)
-        {
-            var product = await _context.CAccountinngAccounts.FindAsync(id);
 
-            if (product == null)
+        // GET: api/AcademicPeriod/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<AccountingAccountDTO>> GetAccountingAccount(int id)
+        {
+
+            CypherAES cy = new CypherAES();
+            var dAccounts = new List<AccountingAccountDTO>();
+            var CAccountingAccounts = await _context.CAccountinngAccounts
+            .Include(p => p.AccountType)
+            .Where(p => p.Account_Type_Id == id)
+           .Select(p => new CAccountingAccountDTOs
+           {
+               Account_Id = p.Account_Id,
+               Account_Type_Name = p.AccountType.Account_Type_Name,
+               Account_Name = p.Account_Name,
+               Current_Value = p.Current_Value,
+               Initial_Balance_Date = p.Initial_Balance_Date,
+               Initial_Balance = p.Initial_Balance,
+               Accounting_Account_Status = p.Accounting_Account_Status,
+           })
+           .FirstOrDefaultAsync();
+
+            var DAccount = new AccountingAccountDTO
+            {
+                Account_Id = CAccountingAccounts.Account_Id,
+                Account_Type_Name = CAccountingAccounts.Account_Type_Name,
+                Account_Name = cy.DecryptStringFromBytes_Aes(CAccountingAccounts.Account_Name, _key, _iv),
+                Current_Value = Decimal.Parse(cy.DecryptStringFromBytes_Aes(CAccountingAccounts.Current_Value, _key, _iv)),
+                Initial_Balance_Date = DateTime.Parse(cy.DecryptStringFromBytes_Aes(CAccountingAccounts.Initial_Balance_Date, _key, _iv)),
+                Initial_Balance = Decimal.Parse(cy.DecryptStringFromBytes_Aes(CAccountingAccounts.Initial_Balance, _key, _iv)),
+                Accounting_Account_Status = cy.DecryptStringFromBytes_Aes(CAccountingAccounts.Accounting_Account_Status, _key, _iv),
+
+            };
+
+            if (DAccount == null)
             {
                 return NotFound();
             }
 
-            return product;
+            return Ok(DAccount);
         }
 
         // POST: api/AccountingAccount

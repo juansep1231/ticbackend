@@ -1,4 +1,5 @@
-﻿using backendfepon.Data;
+﻿using AutoMapper;
+using backendfepon.Data;
 using backendfepon.DTOs.AssociationDTOs;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.Models;
@@ -12,10 +13,12 @@ namespace backendfepon.Controllers
     public class AssociationController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public AssociationController(ApplicationDbContext context)
+        public AssociationController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Association
@@ -77,46 +80,51 @@ namespace backendfepon.Controllers
         [HttpPost]
         public async Task<ActionResult<Association>> PostAssociation (CreateUpdateAssociationDTO associationDTO)
         {
-            var association = new Association
-            {
-                State_Id = associationDTO.State_Id,
-                Name = associationDTO.Name,
-                Mission = associationDTO.Mission,
-                Vision = associationDTO.Vision,
-                Objective = associationDTO.Objective,
-                Phone = associationDTO.Phone,
-                Email = associationDTO.Email,
-                Address = associationDTO.Address
+            var state = await _context.States.FirstOrDefaultAsync(s => s.State_Name == associationDTO.State_Name);
 
-            };
+            // Check if the lookup failed
+            if (state == null)
+            {
+                return BadRequest("Invalid State name.");
+            }
+
+            // Create the association using the ID
+            var association = _mapper.Map<Association>(associationDTO);
+            association.State_Id = state.State_Id;
+
             _context.Associations.Add(association);
             await _context.SaveChangesAsync();
 
-            // Return the created product details
-            return CreatedAtAction(nameof(GetAssociation), new { id = association.Association_Id }, association);
+            // Map the created association to AssociationDTO
+            var createdAssociationDTO = _mapper.Map<AssociationDTO>(association);
+
+            // Return the created association details
+            return CreatedAtAction(nameof(GetAssociation), new { id = association.Association_Id }, createdAssociationDTO);
         }
 
         // PUT: api/Association/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAssociation(int id, CreateUpdateAssociationDTO updatedAssociation)
         {
-
-
             var association = await _context.Associations.FindAsync(id);
 
             if (association == null)
             {
-                return BadRequest();
+                return BadRequest("Invalid Association ID.");
             }
 
-            association.State_Id = updatedAssociation.State_Id;
-            association.Name = updatedAssociation.Name;
-            association.Vision = updatedAssociation.Vision;
-            association.Objective = updatedAssociation.Objective;   
-            association.Phone =   updatedAssociation.Phone;
-            association.Email = updatedAssociation.Email;
-            association.Address = updatedAssociation.Address;
-            
+            // Find the State ID based on the name
+            var state = await _context.States.FirstOrDefaultAsync(s => s.State_Name == updatedAssociation.State_Name);
+
+            // Check if the lookup failed
+            if (state == null)
+            {
+                return BadRequest("Invalid State name.");
+            }
+
+            // Map the updated properties to the existing association
+            _mapper.Map(updatedAssociation, association);
+            association.State_Id = state.State_Id; // Set the State_Id manually
 
             _context.Entry(association).State = EntityState.Modified;
 
@@ -126,7 +134,7 @@ namespace backendfepon.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!AssocaitionExists(id))
+                if (!AssociationExists(id))
                 {
                     return NotFound();
                 }
@@ -139,7 +147,7 @@ namespace backendfepon.Controllers
             return NoContent();
         }
 
-        private bool AssocaitionExists(int id)
+        private bool AssociationExists(int id)
         {
             return _context.Associations.Any(e => e.Association_Id == id);
         }

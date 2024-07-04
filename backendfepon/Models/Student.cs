@@ -17,5 +17,10 @@
         public Contributor Contributor { get; set; }
 
         public AdministrativeMember AdministrativeMember { get; set; }
+
+        public Career Career { get; set; }
+        public Semester Semester { get; set; }
+
+        public Faculty Faculty { get; set; }
     }
 }

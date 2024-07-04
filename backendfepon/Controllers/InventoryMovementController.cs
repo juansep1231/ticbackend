@@ -1,4 +1,5 @@
-﻿using backendfepon.Data;
+﻿using AutoMapper;
+using backendfepon.Data;
 using backendfepon.DTOs.InventoryMovementDTOs;
 using backendfepon.DTOs.InventoryMovementTypeDTO;
 using backendfepon.DTOs.ProductDTOs;
@@ -13,10 +14,12 @@ namespace backendfepon.Controllers
     public class InventoryMovementController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public InventoryMovementController(ApplicationDbContext context)
+        public InventoryMovementController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/InventoryMovement
@@ -70,43 +73,67 @@ namespace backendfepon.Controllers
         }
 
 
-        // POST: api/Products
+        // POST: api/InventoryMovements
         [HttpPost]
-        public async Task<ActionResult<InventoryMovement>> PostAdministrativeMember(CreateUpdateInventoryMovementDTO inventoryMovementDTO)
+        public async Task<ActionResult<InventoryMovementDTO>> PostInventoryMovement(CreateUpdateInventoryMovementDTO inventoryMovementDTO)
         {
-            var inventoryMovement = new InventoryMovement
+            // Find the Product ID based on the name
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Name == inventoryMovementDTO.Product_Name);
+            if (product == null)
             {
-                Transaction_Id = inventoryMovementDTO.Transaction_Id,
-                Product_Id = inventoryMovementDTO.Product_Id,
-                Inventory_Movement_Id = inventoryMovementDTO.Inventory_Movement_Id,
-                Quantity = inventoryMovementDTO.Quantity,
-                Date = inventoryMovementDTO.Date
-            };
+                return BadRequest("Invalid Product name.");
+            }
+
+            // Find the Inventory Movement Type ID based on the name
+            var inventoryMovementType = await _context.InventoryMovementTypes.FirstOrDefaultAsync(imt => imt.Movement_Type_Name == inventoryMovementDTO.Inventory_Movement_Type_Name);
+            if (inventoryMovementType == null)
+            {
+                return BadRequest("Invalid Inventory Movement Type name.");
+            }
+
+            // Map the DTO to the entity
+            var inventoryMovement = _mapper.Map<InventoryMovement>(inventoryMovementDTO);
+            inventoryMovement.Product_Id = product.Product_Id;
+            inventoryMovement.Inventory_Movement_Id = inventoryMovementType.Movement_Type_Id;
+
             _context.InventoryMovements.Add(inventoryMovement);
             await _context.SaveChangesAsync();
 
-            // Return the created product details
-            return CreatedAtAction(nameof(GetInventoryMovement), new { id = inventoryMovement.Movement_Id }, inventoryMovement);
+            var createdInventoryMovementDTO = _mapper.Map<InventoryMovementDTO>(inventoryMovement);
+
+            return CreatedAtAction(nameof(GetInventoryMovement), new { id = inventoryMovement.Movement_Id }, createdInventoryMovementDTO);
         }
-        // PUT: api/Products/5
+
+
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutInvenotryMovement(int id, CreateUpdateInventoryMovementDTO updatedInventoryMovement)
+        public async Task<IActionResult> PutInventoryMovement(int id, CreateUpdateInventoryMovementDTO updatedInventoryMovement)
         {
-
-
             var inventoryMovement = await _context.InventoryMovements.FindAsync(id);
 
             if (inventoryMovement == null)
             {
-                return BadRequest();
+                return BadRequest("Invalid Inventory Movement ID.");
             }
 
-            inventoryMovement.Transaction_Id = updatedInventoryMovement.Transaction_Id;
-            inventoryMovement.Product_Id = updatedInventoryMovement.Product_Id;
-            inventoryMovement.Quantity = updatedInventoryMovement.Quantity;
-            inventoryMovement.Date = updatedInventoryMovement.Date;
-            inventoryMovement.Inventory_Movement_Id = updatedInventoryMovement.Inventory_Movement_Id;
+            // Find the Product ID based on the name
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Name == updatedInventoryMovement.Product_Name);
+            if (product == null)
+            {
+                return BadRequest("Invalid Product name.");
+            }
 
+            // Find the Inventory Movement Type ID based on the name
+            var inventoryMovementType = await _context.InventoryMovementTypes.FirstOrDefaultAsync(imt => imt.Movement_Type_Name == updatedInventoryMovement.Inventory_Movement_Type_Name);
+            if (inventoryMovementType == null)
+            {
+                return BadRequest("Invalid Inventory Movement Type name.");
+            }
+
+            // Map the updated properties to the existing inventory movement
+            _mapper.Map(updatedInventoryMovement, inventoryMovement);
+            inventoryMovement.Product_Id = product.Product_Id; // Set the Product_Id manually
+            inventoryMovement.Inventory_Movement_Id = inventoryMovementType.Movement_Type_Id; // Set the Inventory_Movement_Id manually
 
             _context.Entry(inventoryMovement).State = EntityState.Modified;
 
@@ -128,6 +155,7 @@ namespace backendfepon.Controllers
 
             return NoContent();
         }
+
         // DELETE: api/AdministrativeMember/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteInventoryMovement(int id)

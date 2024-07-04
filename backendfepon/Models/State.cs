@@ -8,7 +8,6 @@
         // Navigation property
         public ICollection<Product> Products { get; set; }
         public ICollection<ContributionPlan> ContributionPlans { get; set; }
-        public ICollection<User> Users { get; set; }
 
         public ICollection<Event> Events { get; set; }
         public ICollection<Association> Associations { get; set; }

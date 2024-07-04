@@ -1,4 +1,5 @@
 ﻿using backendfepon.Data;
+using backendfepon.DTOs.EventExpenseDTO;
 using backendfepon.DTOs.SemesterDTOs;
 using backendfepon.DTOs.StateDTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -23,12 +24,31 @@ namespace backendfepon.Controllers
             var states = await _context.States
                 .Select(s => new StateDTO
                 {
-                    State_Id = s.State_Id,
                     State_Name = s.State_Name
                 })
                 .ToListAsync();
 
             return Ok(states);
+        }
+
+        // GET: api/State/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<StateDTO>> GetState(int id)
+        {
+            var state = await _context.States
+             .Where(p => p.State_Id == id)
+            .Select(p => new StateDTO
+            {
+                State_Name = p.State_Name
+            })
+            .FirstOrDefaultAsync();
+
+            if (state == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(state);
         }
     }
 }

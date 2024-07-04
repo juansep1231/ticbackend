@@ -2,7 +2,7 @@
 {
     public class CreateUpdateAssociationDTO
     {
-        public int State_Id { get; set; }
+        public string State_Name { get; set; }
         public string Name { get; set; }
         public string Mission { get; set; }
         public string Vision { get; set; }

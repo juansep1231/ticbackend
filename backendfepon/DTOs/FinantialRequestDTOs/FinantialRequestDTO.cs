@@ -4,7 +4,7 @@
     {
         public int Request_Id { get; set; }
         public string AdministrativeMember_Name { get; set; }
-        public string Request_Status { get; set; }
+        public string Request_Status_Name { get; set; }
         public decimal Value { get; set; }
         public string Reason { get; set; }
     }

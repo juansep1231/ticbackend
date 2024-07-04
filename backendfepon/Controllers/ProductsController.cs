@@ -1,4 +1,5 @@
-﻿using backendfepon.Data;
+﻿using AutoMapper;
+using backendfepon.Data;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.DTOs.TransactionDTOs;
 using backendfepon.Models;
@@ -12,10 +13,11 @@ namespace backendfepon.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-
-        public ProductsController(ApplicationDbContext context)
+        private readonly IMapper _mapper;
+        public ProductsController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Products
@@ -80,47 +82,64 @@ namespace backendfepon.Controllers
         [HttpPost]
         public async Task<ActionResult<Product>> PostProduct(CreateUpdateProductDTO productDTO)
         {
-            var product = new Product
+            // Find the State, Category, and Provider IDs based on the names
+            var state = await _context.States.FirstOrDefaultAsync(s => s.State_Name == productDTO.State_Name);
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Description == productDTO.Category_Name);
+            var provider = await _context.Providers.FirstOrDefaultAsync(p => p.Name == productDTO.Provider_Name);
+
+            // Check if any of the lookups failed
+            if (state == null || category == null || provider == null)
             {
-                State_Id = productDTO.State_Id,
-                Category_Id = productDTO.Category_Id,
-                Provider_Id = productDTO.Provider_Id,
-                Name = productDTO.Name,
-                Description = productDTO.Description,
-                Economic_Value = productDTO.Economic_Value ?? 0,
-                Quantity = productDTO.Quantity,
-                Label = productDTO.Label,
-                
-            };
-             _context.Products.Add(product);
+                return BadRequest("Invalid State, Category, or Provider name.");
+            }
+
+            // Create the product using the IDs
+            var product = _mapper.Map<Product>(productDTO);
+            product.State_Id = state.State_Id;
+            product.Category_Id = category.Category_Id;
+            product.Provider_Id = provider.Provider_Id;
+
+
+            _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
+            // Map the created product to ProductDTO
+            var createdProductDTO = _mapper.Map<ProductDTO>(product);
             // Return the created product details
-            return CreatedAtAction(nameof(GetProduct), new { id = product.Product_Id }, product);
+            return CreatedAtAction(nameof(GetProduct), new { id = product.Product_Id }, createdProductDTO);
         }
 
         // PUT: api/Products/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, CreateUpdateProductDTO updatedProduct)
+        public async Task<IActionResult> PutProduct(int id, CreateUpdateProductDTO updatedProductDTO)
         {
-
-
             var product = await _context.Products.FindAsync(id);
 
             if (product == null)
             {
-                return BadRequest();
+                return BadRequest("Product not found.");
             }
 
-            product.State_Id = updatedProduct.State_Id;
-            product.Provider_Id = updatedProduct.Provider_Id;
-            product.Name = updatedProduct.Name;
-            product.Description = updatedProduct.Description;
-            product.Economic_Value = updatedProduct.Economic_Value ?? 0;
-            product.Quantity = updatedProduct.Quantity;
-            product.Label = updatedProduct.Label;
-            product.Category_Id = updatedProduct.Category_Id;
+            // Find the State, Category, and Provider IDs based on the names
+            var state = await _context.States.FirstOrDefaultAsync(s => s.State_Name == updatedProductDTO.State_Name);
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Description == updatedProductDTO.Category_Name);
+            var provider = await _context.Providers.FirstOrDefaultAsync(p => p.Name == updatedProductDTO.Provider_Name);
 
+            // Check if any of the lookups failed
+            if (state == null || category == null || provider == null)
+            {
+                return BadRequest("Invalid State, Category, or Provider name.");
+            }
+
+            // Update the product using the IDs
+            product.State_Id = state.State_Id;
+            product.Provider_Id = provider.Provider_Id;
+            product.Name = updatedProductDTO.Name;
+            product.Description = updatedProductDTO.Description;
+            product.Economic_Value = updatedProductDTO.Economic_Value ?? 0;
+            product.Quantity = updatedProductDTO.Quantity;
+            product.Label = updatedProductDTO.Label;
+            product.Category_Id = category.Category_Id;
 
             _context.Entry(product).State = EntityState.Modified;
 
@@ -162,7 +181,7 @@ namespace backendfepon.Controllers
 
         // PATCH: api/Products/5
         [HttpPatch("{id}")]
-        public async Task<IActionResult> PatchProductState(int id, [FromBody] int stateId)
+        public async Task<IActionResult> PatchProductState(int id, [FromBody] string stateName)
         {
             var product = await _context.Products.FindAsync(id);
 
@@ -171,8 +190,17 @@ namespace backendfepon.Controllers
                 return NotFound();
             }
 
+            // Find the State ID based on the name
+            var state = await _context.States.FirstOrDefaultAsync(s => s.State_Name == stateName);
+
+            // Check if the lookup failed
+            if (state == null)
+            {
+                return BadRequest("Invalid State name.");
+            }
+
             // Update the state of the product
-            product.State_Id = stateId;
+            product.State_Id = state.State_Id;
 
             _context.Entry(product).State = EntityState.Modified;
 

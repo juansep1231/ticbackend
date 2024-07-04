@@ -1,5 +1,6 @@
 ﻿using backendfepon.Data;
 using backendfepon.DTOs.EventDTOs;
+using backendfepon.DTOs.EventExpenseDTO;
 using backendfepon.DTOs.EventIncomeDTOs;
 using backendfepon.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -39,16 +40,26 @@ namespace backendfepon.Controllers
 
         // GET: api/EventIncome/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<EventIncome>> GetEventIncome(int id)
+        public async Task<ActionResult<EventIncomeDTO>> GetEventIncome(int id)
         {
-            var eventIncome = await _context.EventIncomes.FindAsync(id);
+            var eventIncome = await _context.EventIncomes
+           .Include(p => p.Transaction)
+            .Include(e => e.Event)
+             .Where(p => p.Income_Id == id)
+            .Select(p => new EventIncomeDTO
+            {
+                Income_Id = p.Income_Id,
+                Transaction_Name = p.Transaction.Reason,
+                Event_Name = p.Event.Title
+            })
+            .FirstOrDefaultAsync();
 
             if (eventIncome == null)
             {
                 return NotFound();
             }
 
-            return eventIncome;
+            return Ok(eventIncome);
         }
 
 

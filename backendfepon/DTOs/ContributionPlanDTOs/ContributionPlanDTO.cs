@@ -3,7 +3,7 @@
     public class ContributionPlanDTO
     {
         public int Plan_Id { get; set; }
-        public string Academic_Period { get; set; }
+        public string Academic_Period_Name { get; set; }
         public string State_Name { get; set; }
         public string Name { get; set; }
         public string Benefits { get; set; }

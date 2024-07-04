@@ -16,9 +16,11 @@ namespace backendfepon.ModelConfigurations
                 .WithOne(c => c.AdministrativeMember)
                 .HasForeignKey<AdministrativeMember>(e => e.Student_Id);
 
-            modelBuilder.HasOne(e => e.User)
-                .WithOne(c => c.AdministrativeMember)
-                .HasForeignKey<AdministrativeMember>(e => e.User_Id);
+            modelBuilder
+              .HasOne(p => p.Role)
+              .WithMany(s => s.Administrative_Members)
+              .HasForeignKey(p => p.Role_Id);
+
 
 
 
