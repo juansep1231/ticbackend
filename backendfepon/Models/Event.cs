@@ -12,7 +12,6 @@
         public string Status { get; set; }
         public string Budget_Status { get; set; }
         public string Event_Location { get; set; }
-        public string Hiring { get; set; }
 
         public State State { get; set; }
 

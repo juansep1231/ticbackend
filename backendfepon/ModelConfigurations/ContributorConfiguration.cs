@@ -26,6 +26,11 @@ namespace backendfepon.ModelConfigurations
                 .WithOne(c => c.Contributor)
                 .HasForeignKey<Contributor>(c => c.Transaction_Id);
 
+            modelBuilder
+               .HasOne(p => p.State)
+               .WithMany(s => s.Contributors)
+               .HasForeignKey(p => p.State_Id);
+
 
         }
     }

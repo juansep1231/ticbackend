@@ -9,7 +9,6 @@ namespace backendfepon.ModelConfigurations.Profiles
         public ProductProfile()
         {
             CreateMap<Product, ProductDTO>()
-                .ForMember(dest => dest.State_Name, opt => opt.MapFrom(src => src.State.State_Name))
                 .ForMember(dest => dest.Category_Name, opt => opt.MapFrom(src => src.Category.Description))
                 .ForMember(dest => dest.Provider_Name, opt => opt.MapFrom(src => src.Provider.Name));
 

@@ -8,7 +8,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SemesterController : ControllerBase
+    public class SemesterController : BaseController
     {
         private readonly ApplicationDbContext _context;
 
@@ -20,34 +20,48 @@ namespace backendfepon.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SemesterDTO>>> GetSemesters()
         {
-            var semesters = await _context.Semesters
-                .Select(s => new SemesterDTO
-                {
-                    Semester_Name = s.Semester_Name
-                })
-                .ToListAsync();
+            try
+            {
+                var semesters = await _context.Semesters
+                    .Select(s => new SemesterDTO
+                    {
+                        Semester_Name = s.Semester_Name
+                    })
+                    .ToListAsync();
 
-            return Ok(semesters);
+                return Ok(semesters);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no se puede obtener los semestres"));
+            }
         }
 
         // GET: api/Semester/5
         [HttpGet("{id}")]
         public async Task<ActionResult<SemesterDTO>> GetSemester(int id)
         {
-            var semester = await _context.Semesters
-             .Where(p => p.Semester_Id == id)
-            .Select(p => new SemesterDTO
+            try
             {
-                Semester_Name = p.Semester_Name
-            })
-            .FirstOrDefaultAsync();
+                var semester = await _context.Semesters
+                    .Where(p => p.Semester_Id == id)
+                    .Select(p => new SemesterDTO
+                    {
+                        Semester_Name = p.Semester_Name
+                    })
+                    .FirstOrDefaultAsync();
 
-            if (semester == null)
-            {
-                return NotFound();
+                if (semester == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Semestre no encontrado."));
+                }
+
+                return Ok(semester);
             }
-
-            return Ok(semester);
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no se puede obtener el semestre"));
+            }
         }
     }
 }

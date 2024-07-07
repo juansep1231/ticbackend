@@ -11,7 +11,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoryController : ControllerBase
+    public class CategoryController : BaseController
     {
         private readonly ApplicationDbContext _context;
 
@@ -23,65 +23,93 @@ namespace backendfepon.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategories()
         {
-            var categories = await _context.Categories
-                .Select(c => new CategoryDTO
-                {
-                    Description = c.Description
-                })
-                .ToListAsync();
+            try
+            {
+                var categories = await _context.Categories
+                    .Select(c => new CategoryDTO
+                    {
+                        Description = c.Description
+                    })
+                    .ToListAsync();
 
-            return Ok(categories);
+                return Ok(categories);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener la categoría"));
+            }
         }
+
         // GET: api/Category/5
         [HttpGet("{id}")]
         public async Task<ActionResult<CategoryDTO>> GetCategory(int id)
         {
-            var category = await _context.Categories
-            .Where(p => p.Category_Id == id)
-           .Select(p => new CategoryDTO
-           {
-               Description = p.Description
-
-           })
-           .FirstOrDefaultAsync();
-
-            if (category == null)
+            try
             {
-                return NotFound();
-            }
+                var category = await _context.Categories
+                    .Where(p => p.Category_Id == id)
+                    .Select(p => new CategoryDTO
+                    {
+                        Description = p.Description
+                    })
+                    .FirstOrDefaultAsync();
 
-            return category;
+                if (category == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Categoría no encontrada."));
+                }
+
+                return Ok(category);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener la categoría"));
+            }
         }
 
         // POST: api/Category
         [HttpPost]
-        public async Task<ActionResult<Category>> PostProduct(CreateCategoryDTO categoryDTO)
+        public async Task<ActionResult<Category>> PostCategory(CreateCategoryDTO categoryDTO)
         {
-            var category = new Category
+            try
             {
-                Description = categoryDTO.Description
-            };
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
+                var category = new Category
+                {
+                    Description = categoryDTO.Description
+                };
 
-            // Return the created product details
-            return CreatedAtAction(nameof(GetCategory), new { id = category.Category_Id }, category);
+                _context.Categories.Add(category);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction(nameof(GetCategory), new { id = category.Category_Id }, category);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar la categoría"));
+            }
         }
 
         // DELETE: api/Category/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
+            try
             {
-                return NotFound();
+                var category = await _context.Categories.FindAsync(id);
+                if (category == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Categoría no encontrada."));
+                }
+
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar la categoría"));
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using backendfepon.Data;
+﻿using AutoMapper;
+using backendfepon.Data;
 using backendfepon.DTOs.FinantialRequestDTOs;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.DTOs.TransactionDTOs;
@@ -14,10 +15,12 @@ namespace backendfepon.Controllers
     public class FinantialRequestController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public FinantialRequestController(ApplicationDbContext context)
+        public FinantialRequestController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/FinantialRequest
@@ -71,7 +74,7 @@ namespace backendfepon.Controllers
         }
 
         // POST: api/FinancialRequest
-        /*
+        
         [HttpPost]
         public async Task<ActionResult<FinantialRequestDTO>> PostFinancialRequest(CreateUpdateFinantialRequestDTO financialRequestDTO)
         {
@@ -83,7 +86,7 @@ namespace backendfepon.Controllers
             }
 
             // Find the Request Status ID based on the name
-            var requestStatus = await _context.RequestStatuses.FirstOrDefaultAsync(rs => rs.Status == financialRequestDTO.Request_Status_Name);
+            var requestStatus = await _context.FinancialRequestStates.FirstOrDefaultAsync(rs => rs.State_Description == financialRequestDTO.Request_Status_Name);
             if (requestStatus == null)
             {
                 return BadRequest("Invalid Request Status name.");
@@ -92,37 +95,48 @@ namespace backendfepon.Controllers
             // Map the DTO to the entity
             var financialRequest = _mapper.Map<FinancialRequest>(financialRequestDTO);
             financialRequest.Administrative_Member_Id = administrativeMember.Administrative_Member_Id;
-            financialRequest.Request_Status_Id = requestStatus.Request_Status_Id;
+            financialRequest.Request_Status_Id = requestStatus.Request_State_Id;
 
             _context.FinancialRequests.Add(financialRequest);
             await _context.SaveChangesAsync();
 
-            var createdFinancialRequestDTO = _mapper.Map<FinancialRequestDTO>(financialRequest);
+            var createdFinancialRequestDTO = _mapper.Map<FinantialRequestDTO>(financialRequest);
 
-            return CreatedAtAction(nameof(GetFinancialRequest), new { id = financialRequest.Request_Id }, createdFinancialRequestDTO);
-        }*/
+            return CreatedAtAction(nameof(GetFinantialRequest), new { id = financialRequest.Request_Id }, createdFinancialRequestDTO);
+        }
 
-        // PUT: api/FinantialRequest/5
-        
-        /*[HttpPut("{id}")]
+
+        // PUT: api/FinancialRequests/5
+        [HttpPut("{id}")]
         public async Task<IActionResult> PutFinantialRequest(int id, CreateUpdateFinantialRequestDTO updatedFinantialRequest)
         {
+            var financialRequest = await _context.FinancialRequests.FindAsync(id);
 
-
-            var finantialRequest = await _context.FinancialRequests.FindAsync(id);
-
-            if (finantialRequest == null)
+            if (financialRequest == null)
             {
-                return BadRequest();
+                return BadRequest("Invalid Financial Request ID.");
             }
 
-            finantialRequest.Administrative_Member_Id = updatedFinantialRequest.AdministrativeMember_Id;
-            finantialRequest.Request_Status_Id = updatedFinantialRequest.Request_Status_Id;
-            finantialRequest.Value = updatedFinantialRequest.Value;
-            finantialRequest.Reason = updatedFinantialRequest.Reason;
+            // Find the Administrative Member ID based on the email
+            var administrativeMember = await _context.AdministrativeMembers.FirstOrDefaultAsync(am => am.Student.Email == updatedFinantialRequest.AdministrativeMember_Name);
+            if (administrativeMember == null)
+            {
+                return BadRequest("Invalid Administrative Member email.");
+            }
 
+            // Find the Request Status ID based on the name
+            var requestStatus = await _context.FinancialRequestStates.FirstOrDefaultAsync(rs => rs.State_Description == updatedFinantialRequest.Request_Status_Name);
+            if (requestStatus == null)
+            {
+                return BadRequest("Invalid Request Status name.");
+            }
 
-            _context.Entry(finantialRequest).State = EntityState.Modified;
+            // Map the updated properties to the existing financial request
+            _mapper.Map(updatedFinantialRequest, financialRequest);
+            financialRequest.Administrative_Member_Id = administrativeMember.Administrative_Member_Id; // Set the Administrative_Member_Id manually
+            financialRequest.Request_Status_Id = requestStatus.Request_State_Id; // Set the Request_Status_Id manually
+
+            _context.Entry(financialRequest).State = EntityState.Modified;
 
             try
             {
@@ -156,7 +170,7 @@ namespace backendfepon.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }*/
+        }
 
         private bool FinantialRequestExists(int id)
         {

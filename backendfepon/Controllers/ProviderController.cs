@@ -11,7 +11,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProviderController : ControllerBase
+    public class ProviderController : BaseController
     {
         private readonly ApplicationDbContext _context;
 
@@ -22,118 +22,153 @@ namespace backendfepon.Controllers
 
         // GET: api/Providers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProviderDTO>>> GetProviders() { 
+        public async Task<ActionResult<IEnumerable<ProviderDTO>>> GetProviders()
+        {
+            try
+            {
+                var providers = await _context.Providers
+                    .Select(p => new ProviderDTO
+                    {
+                        Provider_Id = p.Provider_Id,
+                        Name = p.Name,
+                        Phone = p.Phone,
+                        Email = p.Email
+                    })
+                    .ToListAsync();
 
-            var providers = await _context.Providers
-           .Select(p => new ProviderDTO
-           {
-               Provider_Id = p.Provider_Id,
-               Name = p.Name,
-               Phone = p.Phone,
-               Email = p.Email
-           })
-           .ToListAsync();
-
-            return Ok(providers);
+                return Ok(providers);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obetener el proveedor."));
+            }
         }
-
 
         // GET: api/Provider/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ProviderDTO>> GetProvider(int id)
         {
-            var provider = await _context.Providers
-            .Where(p => p.Provider_Id == id)
-           .Select(p => new ProviderDTO
-           {
-               Provider_Id = p.Provider_Id,
-               Name = p.Name,
-               Phone = p.Phone,
-               Email = p.Email
-
-           })
-           .FirstOrDefaultAsync();
-
-            if (provider == null)
+            try
             {
-                return NotFound();
-            }
+                var provider = await _context.Providers
+                    .Where(p => p.Provider_Id == id)
+                    .Select(p => new ProviderDTO
+                    {
+                        Provider_Id = p.Provider_Id,
+                        Name = p.Name,
+                        Phone = p.Phone,
+                        Email = p.Email
+                    })
+                    .FirstOrDefaultAsync();
 
-            return provider;
+                if (provider == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Proveedor no encontrado."));
+                }
+
+                return Ok(provider);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener el proveedor."));
+            }
         }
 
         // POST: api/Provider
         [HttpPost]
-        public async Task<ActionResult<Provider>> PostTransaction(CreateUpdateProviderDTO providerDTO)
+        public async Task<ActionResult<ProviderDTO>> PostProvider(CreateUpdateProviderDTO providerDTO)
         {
-            var provider = new Provider
+            try
             {
-                Name = providerDTO.Name,
-                Phone = providerDTO.Phone,
-                Email = providerDTO.Email
-            };
-            _context.Providers.Add(provider);
-            await _context.SaveChangesAsync();
+                var provider = new Provider
+                {
+                    Name = providerDTO.Name,
+                    Phone = providerDTO.Phone,
+                    Email = providerDTO.Email
+                };
 
-            // Return the created product details
-            return CreatedAtAction(nameof(GetProvider), new { id = provider.Provider_Id }, provider);
+                _context.Providers.Add(provider);
+                await _context.SaveChangesAsync();
+
+                var createdProviderDTO = new ProviderDTO
+                {
+                    Provider_Id = provider.Provider_Id,
+                    Name = provider.Name,
+                    Phone = provider.Phone,
+                    Email = provider.Email
+                };
+
+                return CreatedAtAction(nameof(GetProvider), new { id = provider.Provider_Id }, createdProviderDTO);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear el servidor"));
+            }
         }
-
 
         // PUT: api/Providers/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProvider(int id, CreateUpdateProviderDTO updatedProvider)
         {
-
-
-            var provider = await _context.Providers.FindAsync(id);
-
-            if (provider == null)
-            {
-                return BadRequest();
-            }
-
-            provider.Name = updatedProvider.Name;
-            provider.Phone = updatedProvider.Phone;
-            provider.Email = updatedProvider.Email;
-
-
-            _context.Entry(provider).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                var provider = await _context.Providers.FindAsync(id);
+                if (provider == null)
+                {
+                    return BadRequest(GenerateErrorResponse(400, "ID de proveedor no válido."));
+                }
+
+                provider.Name = updatedProvider.Name;
+                provider.Phone = updatedProvider.Phone;
+                provider.Email = updatedProvider.Email;
+
+                _context.Entry(provider).State = EntityState.Modified;
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ProviderExists(id))
+                    {
+                        return NotFound(GenerateErrorResponse(404, "Proveedor no encontrado."));
+                    }
+                    else
+                    {
+                        return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error de concurrencia."));
+                    }
+                }
+
+                return NoContent();
             }
-            catch (DbUpdateConcurrencyException)
+            catch
             {
-                if (!ProviderExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar el proveedor"));
             }
-
-            return NoContent();
         }
-
 
         // DELETE: api/Provider/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProvider(int id)
         {
-            var provider = await _context.Providers.FindAsync(id);
-            if (provider == null)
+            try
             {
-                return NotFound();
+                var provider = await _context.Providers.FindAsync(id);
+                if (provider == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Proveedor no encontrado."));
+                }
+
+                _context.Providers.Remove(provider);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-
-            _context.Providers.Remove(provider);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar el proveedor."));
+            }
         }
 
         private bool ProviderExists(int id)

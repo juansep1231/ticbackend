@@ -21,7 +21,10 @@ namespace backendfepon.ModelConfigurations
               .WithMany(s => s.Administrative_Members)
               .HasForeignKey(p => p.Role_Id);
 
-
+            modelBuilder
+              .HasOne(p => p.State)
+              .WithMany(s => s.AdministrativesMembers)
+              .HasForeignKey(p => p.State_Id);
 
 
 

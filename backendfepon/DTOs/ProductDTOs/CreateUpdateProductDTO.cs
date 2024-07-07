@@ -15,8 +15,6 @@
 
         public string Label { get; set; } = null!;
 
-        public string State_Name { get; set; }
-
         public string Provider_Name { get; set; }
     }
 }

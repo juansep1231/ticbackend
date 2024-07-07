@@ -11,7 +11,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PermissionController : ControllerBase
+    public class PermissionController : BaseController
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
@@ -26,126 +26,154 @@ namespace backendfepon.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PermissionDTO>>> GetPermissions()
         {
+            try
+            {
+                var permissions = await _context.Permissions
+                    .Include(p => p.Event)
+                    .Select(p => new PermissionDTO
+                    {
+                        Permission_Id = p.Permission_Id,
+                        Event_Name = p.Event.Title,
+                        Request = p.Request,
+                        Request_Status = p.Request_Status
+                    })
+                    .ToListAsync();
 
-            var permissions = await _context.Permissions
-            .Include(p => p.Event)
-           .Select(p => new PermissionDTO
-           {
-              Permission_Id = p.Permission_Id,
-              Event_Name = p.Event.Title,
-              Request = p.Request,
-              Request_Status = p.Request_Status
-
-           })
-           .ToListAsync();
-
-            return Ok(permissions);
+                return Ok(permissions);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener el permiso"));
+            }
         }
 
         // GET: api/Permission/5
         [HttpGet("{id}")]
         public async Task<ActionResult<PermissionDTO>> GetPermission(int id)
         {
-            var permission = await _context.Permissions
-            .Include(p => p.Event)
-             .Where(p => p.Permission_Id == id)
-            .Select(p => new PermissionDTO
+            try
             {
-                Permission_Id = p.Permission_Id,
-                Event_Name = p.Event.Title,
-                Request = p.Request,
-                Request_Status = p.Request_Status
-            })
-            .FirstOrDefaultAsync();
+                var permission = await _context.Permissions
+                    .Include(p => p.Event)
+                    .Where(p => p.Permission_Id == id)
+                    .Select(p => new PermissionDTO
+                    {
+                        Permission_Id = p.Permission_Id,
+                        Event_Name = p.Event.Title,
+                        Request = p.Request,
+                        Request_Status = p.Request_Status
+                    })
+                    .FirstOrDefaultAsync();
 
-            if (permission == null)
-            {
-                return NotFound();
+                if (permission == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Permiso no encontrado."));
+                }
+
+                return Ok(permission);
             }
-
-            return Ok(permission);
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener el permiso"));
+            }
         }
 
         // POST: api/Permission
         [HttpPost]
         public async Task<ActionResult<PermissionDTO>> PostPermission(CreateUpdatePermissionDTO permissionDTO)
         {
-            // Find the Event ID based on the name
-            var eventEntity = await _context.Events.FirstOrDefaultAsync(e => e.Title == permissionDTO.Event_Name);
-            if (eventEntity == null)
+            try
             {
-                return BadRequest("Invalid Event name.");
+                var eventEntity = await _context.Events.FirstOrDefaultAsync(e => e.Title == permissionDTO.Event_Name);
+                if (eventEntity == null)
+                {
+                    return BadRequest(GenerateErrorResponse(400, "Nombre del evento no válido."));
+                }
+
+                var permission = _mapper.Map<Permission>(permissionDTO);
+                permission.Event_Id = eventEntity.Event_Id;
+
+                _context.Permissions.Add(permission);
+                await _context.SaveChangesAsync();
+
+                var createdPermissionDTO = _mapper.Map<PermissionDTO>(permission);
+
+                return CreatedAtAction(nameof(GetPermission), new { id = permission.Permission_Id }, createdPermissionDTO);
             }
-
-            // Map the DTO to the entity
-            var permission = _mapper.Map<Permission>(permissionDTO);
-            permission.Event_Id = eventEntity.Event_Id;
-
-            _context.Permissions.Add(permission);
-            await _context.SaveChangesAsync();
-
-            var createdPermissionDTO = _mapper.Map<PermissionDTO>(permission);
-
-            return CreatedAtAction(nameof(GetPermission), new { id = permission.Permission_Id }, createdPermissionDTO);
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear el permiso"));
+            }
         }
 
         // PUT: api/Permission/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPermission(int id, CreateUpdatePermissionDTO updatedPermission)
         {
-            var permission = await _context.Permissions.FindAsync(id);
-
-            if (permission == null)
-            {
-                return BadRequest("Invalid Permission ID.");
-            }
-
-            // Find the Event ID based on the name
-            var eventEntity = await _context.Events.FirstOrDefaultAsync(e => e.Title == updatedPermission.Event_Name);
-            if (eventEntity == null)
-            {
-                return BadRequest("Invalid Event name.");
-            }
-
-            // Map the updated properties to the existing permission
-            _mapper.Map(updatedPermission, permission);
-            permission.Event_Id = eventEntity.Event_Id; // Set the Event_Id manually
-
-            _context.Entry(permission).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PermissionExists(id))
+                var permission = await _context.Permissions.FindAsync(id);
+                if (permission == null)
                 {
-                    return NotFound();
+                    return BadRequest(GenerateErrorResponse(400, "ID del permiso no válido."));
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+                var eventEntity = await _context.Events.FirstOrDefaultAsync(e => e.Title == updatedPermission.Event_Name);
+                if (eventEntity == null)
+                {
+                    return BadRequest(GenerateErrorResponse(400, "Nombre del evento no válido."));
+                }
+
+                _mapper.Map(updatedPermission, permission);
+                permission.Event_Id = eventEntity.Event_Id;
+
+                _context.Entry(permission).State = EntityState.Modified;
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!PermissionExists(id))
+                    {
+                        return NotFound(GenerateErrorResponse(404, "Permiso no encontrado."));
+                    }
+                    else
+                    {
+                        return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error de concurrencia."));
+                    }
+                }
+
+                return NoContent();
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar el permiso"));
+            }
         }
 
         // DELETE: api/Permission/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePermission(int id)
         {
-            var permission = await _context.Permissions.FindAsync(id);
-            if (permission == null)
+            try
             {
-                return NotFound();
+                var permission = await _context.Permissions.FindAsync(id);
+                if (permission == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Permiso no encontrado."));
+                }
+
+                _context.Permissions.Remove(permission);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-
-            _context.Permissions.Remove(permission);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar el permiso"));
+            }
         }
 
         private bool PermissionExists(int id)

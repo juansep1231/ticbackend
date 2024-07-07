@@ -8,7 +8,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RoleController : ControllerBase
+    public class RoleController : BaseController
     {
         private readonly ApplicationDbContext _context;
 
@@ -20,34 +20,48 @@ namespace backendfepon.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RoleDTO>>> GetRoles()
         {
-            var roles = await _context.Roles
-                .Select(s => new RoleDTO
-                {
-                    Role_Name = s.Role_Name
-                })
-                .ToListAsync();
+            try
+            {
+                var roles = await _context.Roles
+                    .Select(s => new RoleDTO
+                    {
+                        Role_Name = s.Role_Name
+                    })
+                    .ToListAsync();
 
-            return Ok(roles);
+                return Ok(roles);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener los roles"));
+            }
         }
 
         // GET: api/Role/5
         [HttpGet("{id}")]
         public async Task<ActionResult<StateDTO>> GetRole(int id)
         {
-            var role = await _context.Roles
-             .Where(p => p.Role_Id == id)
-            .Select(p => new StateDTO
+            try
             {
-                State_Name = p.Role_Name
-            })
-            .FirstOrDefaultAsync();
+                var role = await _context.Roles
+                    .Where(p => p.Role_Id == id)
+                    .Select(p => new StateDTO
+                    {
+                        State_Name = p.Role_Name
+                    })
+                    .FirstOrDefaultAsync();
 
-            if (role == null)
-            {
-                return NotFound();
+                if (role == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Rol no encontrado."));
+                }
+
+                return Ok(role);
             }
-
-            return Ok(role);
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener el rol"));
+            }
         }
     }
 

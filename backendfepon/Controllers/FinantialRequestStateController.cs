@@ -9,7 +9,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FinantialRequestStateController : ControllerBase
+    public class FinantialRequestStateController : BaseController
     {
         private readonly ApplicationDbContext _context;
 
@@ -21,33 +21,48 @@ namespace backendfepon.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FinantialRequestStateDTO>>> GetFinantialStates()
         {
-            var states = await _context.FinancialRequestStates
-                .Select(s => new FinantialRequestStateDTO
-                {
-                    State_Description = s.State_Description
-                })
-                .ToListAsync();
+            try
+            {
+                var states = await _context.FinancialRequestStates
+                    .Select(s => new FinantialRequestStateDTO
+                    {
+                        State_Description = s.State_Description
+                    })
+                    .ToListAsync();
 
-            return Ok(states);
+                return Ok(states);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener el estado de solicitud financiera"));
+            }
         }
 
         // GET: api/FinantialRequestState/5
         [HttpGet("{id}")]
         public async Task<ActionResult<FinantialRequestStateDTO>> GetFinantialState(int id)
         {
-            var finantialRequestState = await _context.FinancialRequestStates
-            .Select(s => new FinantialRequestStateDTO
+            try
             {
-                State_Description = s.State_Description
-            })
-            .FirstOrDefaultAsync();
+                var finantialRequestState = await _context.FinancialRequestStates
+                    .Where(s => s.Request_State_Id == id)
+                    .Select(s => new FinantialRequestStateDTO
+                    {
+                        State_Description = s.State_Description
+                    })
+                    .FirstOrDefaultAsync();
 
-            if (finantialRequestState == null)
-            {
-                return NotFound();
+                if (finantialRequestState == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Estado de solicitud financiera no encontrado."));
+                }
+
+                return Ok(finantialRequestState);
             }
-
-            return Ok(finantialRequestState);
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener el estado de solicitud financiera"));
+            }
         }
     }
 }

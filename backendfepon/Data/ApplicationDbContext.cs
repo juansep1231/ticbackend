@@ -38,6 +38,7 @@ namespace backendfepon.Data
         public DbSet<CAccountingAccount> CAccountinngAccounts { get; set; }
         public DbSet<Faculty> Faculties { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<TransactionType> TransactionTypes { get; set; }
 
 
 
@@ -73,6 +74,7 @@ namespace backendfepon.Data
             modelBuilder.ApplyConfiguration(new FinantialRequestStateConfiguration());
             modelBuilder.ApplyConfiguration(new FinancialRequestConfiguration());
             modelBuilder.ApplyConfiguration(new AssociationConfiguration());
+            modelBuilder.ApplyConfiguration(new TransactionTypeConfiguration());
 
             //cypher
             modelBuilder.ApplyConfiguration(new CAccountingAccountConfiguration());

@@ -8,7 +8,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EventExpenseController : ControllerBase
+    public class EventExpenseController : BaseController
     {
         private readonly ApplicationDbContext _context;
 
@@ -21,51 +21,64 @@ namespace backendfepon.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventExpenseDTO>>> GetEventExpenses()
         {
+            try
+            {
+                var eventExpenses = await _context.EventExpenses
+                    .Include(p => p.Transaction)
+                    .Include(p => p.Providers)
+                    .Include(p => p.Responsible)
+                    .Include(p => p.Event)
+                    .Select(p => new EventExpenseDTO
+                    {
+                        Expense_Id = p.Expense_Id,
+                        Transaction_Id = p.Transaction_Id,
+                        Event_Name = p.Event.Title,
+                        Responsible_Name = p.Responsible.AdministrativeMember.Student.Last_Name,
+                        Provider_Names = p.Providers.Select(provider => provider.Name).ToList()
+                    })
+                    .ToListAsync();
 
-            var eventExpenses = await _context.EventExpenses
-            .Include(p => p.Transaction)
-            .Include(p => p.Providers)
-            .Include(p => p.Responsible)
-            .Include(p => p.Event)
-           .Select(p => new EventExpenseDTO
-           {
-               Expense_Id = p.Expense_Id,
-               Transaction_Id = p.Transaction_Id,
-               Event_Name = p.Event.Title,
-               Responsible_Name = p.Responsible.AdministrativeMember.Student.Last_Name,
-               Provider_Names = p.Providers.Select(provider => provider.Name).ToList()
-           })
-           .ToListAsync();
-
-            return Ok(eventExpenses);
+                return Ok(eventExpenses);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener el gasto"));
+            }
         }
 
         // GET: api/EventExpense/5
         [HttpGet("{id}")]
         public async Task<ActionResult<EventExpenseDTO>> GetEventExpense(int id)
         {
-            var eventExpense = await _context.EventExpenses
-             .Include(p => p.Transaction)
-            .Include(p => p.Providers)
-            .Include(p => p.Responsible)
-            .Include(p => p.Event)
-             .Where(p => p.Expense_Id == id)
-            .Select(p => new EventExpenseDTO
+            try
             {
-                Expense_Id = p.Expense_Id,
-                Transaction_Id = p.Transaction_Id,
-                Event_Name = p.Event.Title,
-                Responsible_Name = p.Responsible.AdministrativeMember.Student.Last_Name,
-                Provider_Names = p.Providers.Select(provider => provider.Name).ToList()
-            })
-            .FirstOrDefaultAsync();
+                var eventExpense = await _context.EventExpenses
+                    .Include(p => p.Transaction)
+                    .Include(p => p.Providers)
+                    .Include(p => p.Responsible)
+                    .Include(p => p.Event)
+                    .Where(p => p.Expense_Id == id)
+                    .Select(p => new EventExpenseDTO
+                    {
+                        Expense_Id = p.Expense_Id,
+                        Transaction_Id = p.Transaction_Id,
+                        Event_Name = p.Event.Title,
+                        Responsible_Name = p.Responsible.AdministrativeMember.Student.Last_Name,
+                        Provider_Names = p.Providers.Select(provider => provider.Name).ToList()
+                    })
+                    .FirstOrDefaultAsync();
 
-            if (eventExpense == null)
-            {
-                return NotFound();
+                if (eventExpense == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Gasto del evento no encontrado."));
+                }
+
+                return Ok(eventExpense);
             }
-
-            return Ok(eventExpense);
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener el gasto"));
+            }
         }
     }
 }

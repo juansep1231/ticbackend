@@ -7,9 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backendfepon.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
-    public class AccountTypeController : ControllerBase
+    public class AccountTypeController : BaseController
     {
         private readonly ApplicationDbContext _context;
 
@@ -19,37 +20,50 @@ namespace backendfepon.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AccountTypeDTO>>> GetStates()
+        public async Task<ActionResult<IEnumerable<AccountTypeDTO>>> GetAccountTypes()
         {
-            var accountTypes = await _context.AccountTypes
-                .Select(s => new AccountTypeDTO
-                {
-                    Account_Type_Name = s.Account_Type_Name
-                })
-                .ToListAsync();
+            try
+            {
+                var accountTypes = await _context.AccountTypes
+                    .Select(s => new AccountTypeDTO
+                    {
+                        Account_Type_Name = s.Account_Type_Name
+                    })
+                    .ToListAsync();
 
-            return Ok(accountTypes);
+                return Ok(accountTypes);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener los tipos de cuenta"));
+            }
         }
 
-        // GET: api/AcademicPeriod/5
+        // GET: api/AccountType/5
         [HttpGet("{id}")]
         public async Task<ActionResult<AccountTypeDTO>> GetAccountType(int id)
         {
-            var accountType = await _context.AccountTypes
-            .Where(p => p.Account_Type_Id == id)
-           .Select(p => new AccountTypeDTO
-           {
-               Account_Type_Name = p.Account_Type_Name
-
-           })
-           .FirstOrDefaultAsync();
-
-            if (accountType == null)
+            try
             {
-                return NotFound();
-            }
+                var accountType = await _context.AccountTypes
+                    .Where(p => p.Account_Type_Id == id)
+                    .Select(p => new AccountTypeDTO
+                    {
+                        Account_Type_Name = p.Account_Type_Name
+                    })
+                    .FirstOrDefaultAsync();
 
-            return Ok(accountType);
+                if (accountType == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Tipo de cuenta no encontrado."));
+                }
+
+                return Ok(accountType);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener el tipo de cuenta"));
+            }
         }
     }
 }

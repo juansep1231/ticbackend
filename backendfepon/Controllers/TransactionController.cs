@@ -40,6 +40,7 @@ namespace backendfepon.Controllers
            .Select(p => new TransactionDTO
            {
                Transaction_Id = p.Transaction_Id,
+               Transaction_Type_Name= p.TransactionType.Transaction_Type_Name,
                Date = p.Date,
                Origin_Account_Name = cy.DecryptStringFromBytes_Aes(p.OriginAccount.Account_Name, _key, _iv) ,
                Destination_Account_Name = cy.DecryptStringFromBytes_Aes(p.DestinationAccount.Account_Name, _key, _iv),
@@ -63,12 +64,12 @@ namespace backendfepon.Controllers
            .Select(p => new TransactionDTO
            {
                Transaction_Id = p.Transaction_Id,
+               Transaction_Type_Name = p.TransactionType.Transaction_Type_Name,
                Date = p.Date,
                Origin_Account_Name = cy.DecryptStringFromBytes_Aes(p.OriginAccount.Account_Name, _key, _iv),
                Destination_Account_Name = cy.DecryptStringFromBytes_Aes(p.DestinationAccount.Account_Name, _key, _iv),
                Value = p.Value,
                Reason = p.Reason,
-
            })
            .FirstOrDefaultAsync();
 
@@ -86,6 +87,7 @@ namespace backendfepon.Controllers
         {
             var transaction = new Transaction
             {
+                
                 Date = transactionDTO.Date,
                 Origin_Account = transactionDTO.Origin_Account,
                 Destination_Account = transactionDTO.Destination_Account,

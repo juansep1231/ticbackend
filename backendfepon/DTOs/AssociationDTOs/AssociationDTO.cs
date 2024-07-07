@@ -3,7 +3,6 @@
     public class AssociationDTO
     {
         public int AssociationId { get; set; }
-        public string State_Name { get; set; }
         public string Name { get; set; }
         public string Mission { get; set; }
         public string Vision { get; set; }

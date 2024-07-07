@@ -9,7 +9,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AcademicPeriodController : ControllerBase
+    public class AcademicPeriodController : BaseController
     {
         private readonly ApplicationDbContext _context;
 
@@ -21,37 +21,48 @@ namespace backendfepon.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AcademicPeriodDTO>>> GetAcademicPeriods()
         {
-            var academicPeriods = await _context.AcademicPeriods
-                .Select(ap => new AcademicPeriodDTO
-                {
-                    Academic_Period_Name = ap.Academic_Period_Name
-                })
-                .ToListAsync();
+            try
+            {
+                var academicPeriods = await _context.AcademicPeriods
+                    .Select(ap => new AcademicPeriodDTO
+                    {
+                        Academic_Period_Name = ap.Academic_Period_Name
+                    })
+                    .ToListAsync();
 
-            return Ok(academicPeriods);
+                return Ok(academicPeriods);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "No es posible obtener los periodos académicos"));
+            }
         }
 
         // GET: api/AcademicPeriod/5
         [HttpGet("{id}")]
         public async Task<ActionResult<AcademicPeriodDTO>> GetAcademicPeriod(int id)
         {
-            var academicPeriod = await _context.AcademicPeriods
-            .Where(p => p.Academic_Period_Id == id)
-           .Select(p => new AcademicPeriodDTO
-           {
-               Academic_Period_Name = p.Academic_Period_Name
-
-           })
-           .FirstOrDefaultAsync();
-
-            if (academicPeriod == null)
+            try
             {
-                return NotFound();
+                var academicPeriod = await _context.AcademicPeriods
+                    .Where(p => p.Academic_Period_Id == id)
+                    .Select(p => new AcademicPeriodDTO
+                    {
+                        Academic_Period_Name = p.Academic_Period_Name
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (academicPeriod == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "No se encontró el periodo académico"));
+                }
+
+                return Ok(academicPeriod);
             }
-
-            return Ok(academicPeriod);
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "No es posible obtener los periodos académicos"));
+            }
         }
-
-
     }
 }

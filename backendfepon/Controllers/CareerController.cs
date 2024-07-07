@@ -10,9 +10,8 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CareerController : ControllerBase
+    public class CareerController : BaseController
     {
-
         private readonly ApplicationDbContext _context;
 
         public CareerController(ApplicationDbContext context)
@@ -23,35 +22,48 @@ namespace backendfepon.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CareerDTO>>> GetCareers()
         {
-            var careers = await _context.Careers
-                .Select(c => new CareerDTO
-                {
-                    Career_Name = c.Career_Name
-                })
-                .ToListAsync();
+            try
+            {
+                var careers = await _context.Careers
+                    .Select(c => new CareerDTO
+                    {
+                        Career_Name = c.Career_Name
+                    })
+                    .ToListAsync();
 
-            return Ok(careers);
+                return Ok(careers);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener la carrera"));
+            }
         }
 
         // GET: api/Career/5
         [HttpGet("{id}")]
         public async Task<ActionResult<CareerDTO>> GetCareer(int id)
         {
-            var career = await _context.Careers
-            .Where(p => p.Career_Id == id)
-           .Select(p => new CareerDTO
-           {
-               Career_Name = p.Career_Name
-
-           })
-           .FirstOrDefaultAsync();
-
-            if (career == null)
+            try
             {
-                return NotFound();
-            }
+                var career = await _context.Careers
+                    .Where(p => p.Career_Id == id)
+                    .Select(p => new CareerDTO
+                    {
+                        Career_Name = p.Career_Name
+                    })
+                    .FirstOrDefaultAsync();
 
-            return career;
+                if (career == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Carrera no encontrada."));
+                }
+
+                return Ok(career);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener la carrera"));
+            }
         }
     }
 }
