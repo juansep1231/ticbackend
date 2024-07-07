@@ -34,13 +34,8 @@ namespace backendfepon.Controllers
                     .Select(p => new AssociationDTO
                     {
                         AssociationId = p.Association_Id,
-                        Name = p.Name,
                         Mission = p.Mission,
                         Vision = p.Vision,
-                        Objective = p.Objective,
-                        Phone = p.Phone,
-                        Email = p.Email,
-                        Address = p.Address
                     })
                     .ToListAsync();
 
@@ -64,13 +59,8 @@ namespace backendfepon.Controllers
                     .Select(p => new AssociationDTO
                     {
                         AssociationId = p.Association_Id,
-                        Name = p.Name,
                         Mission = p.Mission,
                         Vision = p.Vision,
-                        Objective = p.Objective,
-                        Phone = p.Phone,
-                        Email = p.Email,
-                        Address = p.Address
                     })
                     .FirstOrDefaultAsync();
 
@@ -104,9 +94,20 @@ namespace backendfepon.Controllers
 
                 return CreatedAtAction(nameof(GetAssociation), new { id = association.Association_Id }, createdAssociationDTO);
             }
-            catch
+            catch (DbUpdateException ex)
             {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear la Asociación"));
+                // Handle database update exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Error al actualizar la base de datos, no es posible crear la Asociación", ex));
+            }
+            catch (AutoMapperMappingException ex)
+            {
+                // Handle AutoMapper exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Error en la configuración del mapeo, no es posible crear la Asociación", ex));
+            }
+            catch (Exception ex)
+            {
+                // Handle all other exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear la Asociación", ex));
             }
         }
 

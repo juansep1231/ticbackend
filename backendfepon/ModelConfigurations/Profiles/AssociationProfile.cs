@@ -11,6 +11,8 @@ namespace backendfepon.ModelConfigurations.Profiles
 
             CreateMap<CreateUpdateAssociationDTO, Association>()
                 .ForMember(dest => dest.State_Id, opt => opt.Ignore());
+
+            CreateMap<Association, AssociationDTO>();
         }
     }
 }
