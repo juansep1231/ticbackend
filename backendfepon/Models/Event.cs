@@ -13,7 +13,7 @@
         public string Budget_Status { get; set; }
         public string Event_Location { get; set; }
 
-        public State State { get; set; }
+        public EventState State { get; set; }
 
         public Permission Permission { get; set; }
 

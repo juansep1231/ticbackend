@@ -9,7 +9,7 @@
         public ICollection<Product> Products { get; set; }
         public ICollection<ContributionPlan> ContributionPlans { get; set; }
 
-        public ICollection<Event> Events { get; set; }
+        //public ICollection<Event> Events { get; set; }
         public ICollection<Association> Associations { get; set; }
         public ICollection<AdministrativeMember> AdministrativesMembers { get; set; }
         public ICollection<Contributor> Contributors { get; set; }

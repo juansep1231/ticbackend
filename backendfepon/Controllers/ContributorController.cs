@@ -4,6 +4,7 @@ using backendfepon.DTOs.AssociationDTOs;
 using backendfepon.DTOs.ContributorDTO;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.Models;
+using backendfepon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,7 @@ namespace backendfepon.Controllers
                     .Include(t => t.Transaction)
                     .Include(t => t.ContributionPlan)
                     .Include(t => t.Student)
+                    .Where(p => p.State_Id == Constants.DEFAULT_STATE)
                     .Select(p => new ContributorDTO
                     {
                         Contributor_Id = p.Contributor_Id,
@@ -63,7 +65,7 @@ namespace backendfepon.Controllers
                     .Include(t => t.Transaction)
                     .Include(t => t.ContributionPlan)
                     .Include(t => t.Student)
-                    .Where(p => p.Contributor_Id == id)
+                    .Where(p => p.State_Id == Constants.DEFAULT_STATE && p.Contributor_Id == id)
                     .Select(p => new ContributorDTO
                     {
                         Contributor_Id = p.Contributor_Id,
@@ -109,6 +111,7 @@ namespace backendfepon.Controllers
                 }
 
                 var contributor = _mapper.Map<Contributor>(contributorDTO);
+                contributor.State_Id= Constants.DEFAULT_STATE;
                 contributor.Plan_Id = plan.Plan_Id;
                 contributor.Student_Id = student.Student_Id;
 
@@ -199,6 +202,45 @@ namespace backendfepon.Controllers
             catch
             {
                 return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar el aportante"));
+            }
+        }
+
+        // PATCH: api/Products/5
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> PatchContributorState(int id)
+        {
+            try
+            {
+                var contributor = await _context.Contributors.FindAsync(id);
+                if (contributor == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Aportante no encontrado."));
+                }
+
+                contributor.State_Id = Constants.STATE_INACTIVE;
+                _context.Entry(contributor).State = EntityState.Modified;
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ContributorExists(id))
+                    {
+                        return NotFound(GenerateErrorResponse(404, "Aportante no encontrado."));
+                    }
+                    else
+                    {
+                        return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error de concurrencia."));
+                    }
+                }
+
+                return NoContent();
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar el estado"));
             }
         }
 

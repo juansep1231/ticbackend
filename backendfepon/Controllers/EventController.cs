@@ -32,7 +32,7 @@ namespace backendfepon.Controllers
                     .Select(p => new EventDTO
                     {
                         Event_Id = p.Event_Id,
-                        State_Name = p.State.State_Name,
+                        State_Name = p.State.Event_State_Name,
                         Title = p.Title,
                         Description = p.Description,
                         Start_Date = p.Start_Date,
@@ -65,7 +65,7 @@ namespace backendfepon.Controllers
                     .Select(p => new EventDTO
                     {
                         Event_Id = p.Event_Id,
-                        State_Name = p.State.State_Name,
+                        State_Name = p.State.Event_State_Name,
                         Title = p.Title,
                         Description = p.Description,
                         Start_Date = p.Start_Date,
@@ -119,6 +119,7 @@ namespace backendfepon.Controllers
             }
         }
 
+        /*
         // PUT: api/Event/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutEvent(int id, CreateUpdateEventDTO updatedEvent)
@@ -165,7 +166,7 @@ namespace backendfepon.Controllers
                 return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar el evento"));
             }
         }
-
+        */
         // DELETE: api/Event/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEvent(int id)
@@ -188,6 +189,38 @@ namespace backendfepon.Controllers
                 return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar el evento"));
             }
         }
+
+        // Método para actualizar el estado del evento
+        [HttpPut("{id}/state")]
+        public async Task<IActionResult> UpdateEventStatus(int id, [FromBody] string newState)
+        {
+            try
+            {
+                var oldEvent = await _context.Events.FindAsync(id);
+                if (oldEvent == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Evento no encontrado."));
+                }
+
+                var state = await _context.EventStates.FirstOrDefaultAsync(s => s.Event_State_Name == newState);
+                if (state == null)
+                {
+                    return BadRequest(GenerateErrorResponse(400, "Nombre del estado no válido."));
+                }
+
+                oldEvent.State_Id = state.Event_State_Id;
+
+                _context.Entry(oldEvent).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar el estado del evento"));
+            }
+        }
+
 
         private bool EventExists(int id)
         {
