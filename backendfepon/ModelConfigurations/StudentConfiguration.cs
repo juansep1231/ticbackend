@@ -10,6 +10,7 @@ namespace backendfepon.ModelConfigurations
         {
             modelBuilder.ToTable("STUDENT");
             modelBuilder.HasKey(p => p.Student_Id);
+            /*
 
             // Relationships
             modelBuilder.HasOne(e => e.AdministrativeMember)
@@ -31,7 +32,7 @@ namespace backendfepon.ModelConfigurations
             .WithMany(s => s.Students)
             .HasForeignKey(p => p.Semester_Id);
 
-
+            */
         }
     }
 }

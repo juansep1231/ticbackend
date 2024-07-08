@@ -34,7 +34,7 @@ namespace backendfepon.Controllers
            .Select(p => new FinantialRequestDTO
            {
                Request_Id = p.Request_Id,
-               AdministrativeMember_Name = p.AdministrativeMember.Student.First_Name,
+               AdministrativeMember_Name = p.AdministrativeMember.Name,
                Request_Status_Name = p.Financial_Request_State.State_Description,
                Value = p.Value,
                Reason = p.Reason
@@ -57,7 +57,7 @@ namespace backendfepon.Controllers
            .Select(p => new FinantialRequestDTO
            {
                Request_Id = p.Request_Id,
-               AdministrativeMember_Name = p.AdministrativeMember.Student.First_Name,
+               AdministrativeMember_Name = p.AdministrativeMember.Name,
                Request_Status_Name = p.Financial_Request_State.State_Description,
                Value = p.Value,
                Reason = p.Reason
@@ -79,7 +79,7 @@ namespace backendfepon.Controllers
         public async Task<ActionResult<FinantialRequestDTO>> PostFinancialRequest(CreateUpdateFinantialRequestDTO financialRequestDTO)
         {
             // Find the Administrative Member ID based on the name
-            var administrativeMember = await _context.AdministrativeMembers.FirstOrDefaultAsync(am => am.Student.Email == financialRequestDTO.AdministrativeMember_Name);
+            var administrativeMember = await _context.AdministrativeMembers.FirstOrDefaultAsync(am => am.Email == financialRequestDTO.AdministrativeMember_Name);
             if (administrativeMember == null)
             {
                 return BadRequest("Invalid Administrative Member name.");
@@ -118,7 +118,7 @@ namespace backendfepon.Controllers
             }
 
             // Find the Administrative Member ID based on the email
-            var administrativeMember = await _context.AdministrativeMembers.FirstOrDefaultAsync(am => am.Student.Email == updatedFinantialRequest.AdministrativeMember_Name);
+            var administrativeMember = await _context.AdministrativeMembers.FirstOrDefaultAsync(am => am.Email == updatedFinantialRequest.AdministrativeMember_Name);
             if (administrativeMember == null)
             {
                 return BadRequest("Invalid Administrative Member email.");
