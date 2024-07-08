@@ -134,26 +134,26 @@ namespace backendfepon.Controllers
         */
 
         [HttpPost]
-        public async Task<ActionResult<AdministrativeMemberDTO>> PostAdministrativeMember(AdministrativeMemberDTO administrativeMemberDTO)
+        public async Task<ActionResult<AdministrativeMemberDTO>> PostAdministrativeMember(CreateUpdateAdministrativeMemberDTO administrativeMemberDTO)
         {
             try
             {
                 // Verificar si el Faculty existe
-                var faculty = await _context.Faculties.FirstOrDefaultAsync(f => f.Faculty_Name == administrativeMemberDTO.faculty);
+                var faculty = await _context.Faculties.FirstOrDefaultAsync(f => f.Faculty_Name == administrativeMemberDTO.Faculty);
                 if (faculty == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Nombre de facultad no válido."));
                 }
 
                 // Verificar si el Career existe
-                var career = await _context.Careers.FirstOrDefaultAsync(c => c.Career_Name == administrativeMemberDTO.career);
+                var career = await _context.Careers.FirstOrDefaultAsync(c => c.Career_Name == administrativeMemberDTO.Career);
                 if (career == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Nombre de carrera no válido."));
                 }
 
                 // Verificar si el Semester existe
-                var semester = await _context.Semesters.FirstOrDefaultAsync(s => s.Semester_Name == administrativeMemberDTO.semester);
+                var semester = await _context.Semesters.FirstOrDefaultAsync(s => s.Semester_Name == administrativeMemberDTO.Semester);
                 if (semester == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Nombre de semestre no válido."));
@@ -162,7 +162,7 @@ namespace backendfepon.Controllers
                 
 
                 // Verificar si el Role existe
-                var role = await _context.Roles.FirstOrDefaultAsync(r => r.Role_Name == administrativeMemberDTO.position);
+                var role = await _context.Roles.FirstOrDefaultAsync(r => r.Role_Name == administrativeMemberDTO.Position);
                 if (role == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Rol no válido."));
@@ -171,7 +171,7 @@ namespace backendfepon.Controllers
                 // Mapear el DTO a la entidad del modelo
                 var administrativeMember = _mapper.Map<AdministrativeMember>(administrativeMemberDTO);
                 _logger.LogInformation("////////////////////////////////////");
-                //administrativeMember.Birth_Date = DateTime.Now;
+                administrativeMember.Birth_Date = DateTime.Now;
                 administrativeMember.Faculty_Id = faculty.Faculty_Id;
                 administrativeMember.Career_Id = career.Career_Id;
                 administrativeMember.Semester_Id = semester.Semester_Id;
