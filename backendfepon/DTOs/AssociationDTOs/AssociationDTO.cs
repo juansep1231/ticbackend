@@ -2,9 +2,11 @@
 {
     public class AssociationDTO
     {
-        public int AssociationId { get; set; }
-        public string Mission { get; set; }
-        public string Vision { get; set; }
+        public int id { get; set; }
+        public int state_id { get; set; }
+        public string mission { get; set; }
+        public string vision { get; set; }
+
         
     }
 }

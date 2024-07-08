@@ -33,9 +33,10 @@ namespace backendfepon.Controllers
                     .Where(p => p.State_Id == Constants.DEFAULT_STATE)
                     .Select(p => new AssociationDTO
                     {
-                        AssociationId = p.Association_Id,
-                        Mission = p.Mission,
-                        Vision = p.Vision,
+                        id = p.Association_Id,
+                        state_id = p.State_Id,
+                        mission = p.Mission,
+                        vision = p.Vision,
                     })
                     .ToListAsync();
 
@@ -58,9 +59,11 @@ namespace backendfepon.Controllers
                     .Where(p => p.State_Id == Constants.DEFAULT_STATE && p.Association_Id == id)
                     .Select(p => new AssociationDTO
                     {
-                        AssociationId = p.Association_Id,
-                        Mission = p.Mission,
-                        Vision = p.Vision,
+                        id = p.Association_Id,
+                        state_id = p.State_Id,
+
+                        mission = p.Mission,
+                        vision = p.Vision,
                     })
                     .FirstOrDefaultAsync();
 
@@ -124,7 +127,6 @@ namespace backendfepon.Controllers
                 }
 
                 _mapper.Map(updatedAssociation, association);
-                association.State_Id = Constants.STATE_INACTIVE;
 
                 _context.Entry(association).State = EntityState.Modified;
 

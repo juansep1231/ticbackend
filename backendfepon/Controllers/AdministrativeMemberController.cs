@@ -35,16 +35,16 @@ namespace backendfepon.Controllers
                     .Where(p => p.State_Id == Constants.DEFAULT_STATE)
                     .Select(p => new AdministrativeMemberDTO
                     {
-                        Administrative_Member_Id = p.Administrative_Member_Id,
-                        Student_Name = p.Student.First_Name,
-                        Student_LastName = p.Student.Last_Name,
-                        Student_Birthday = p.Student.Birth_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
-                        Student_Phone = p.Student.Phone,
-                        Student_Faculty = p.Student.Faculty.Faculty_Name,
-                        Student_Career = p.Student.Career.Career_Name,
-                        Student_Semester = p.Student.Semester.Semester_Name,
-                        Student_Email = p.Student.Email,
-                        Member_Role = p.Role.Role_Name
+                        id = p.Administrative_Member_Id,
+                        firstName = p.Student.First_Name,
+                        lastName = p.Student.Last_Name,
+                        birthDate = p.Student.Birth_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                        cellphone = p.Student.Phone,
+                        faculty = p.Student.Faculty.Faculty_Name,
+                        career = p.Student.Career.Career_Name,
+                        semester = p.Student.Semester.Semester_Name,
+                        email = p.Student.Email,
+                        position = p.Role.Role_Name
                     })
                     .ToListAsync();
 
@@ -67,16 +67,16 @@ namespace backendfepon.Controllers
                     .Where(p => p.State_Id == Constants.DEFAULT_STATE && p.Administrative_Member_Id == id)
                     .Select(p => new AdministrativeMemberDTO
                     {
-                        Administrative_Member_Id = p.Administrative_Member_Id,
-                        Student_Name = p.Student.First_Name,
-                        Student_LastName = p.Student.Last_Name,
-                        Student_Birthday = p.Student.Birth_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
-                        Student_Phone = p.Student.Phone,
-                        Student_Faculty = p.Student.Faculty.Faculty_Name,
-                        Student_Career = p.Student.Career.Career_Name,
-                        Student_Semester = p.Student.Semester.Semester_Name,
-                        Student_Email = p.Student.Email,
-                        Member_Role = p.Role.Role_Name,
+                        id = p.Administrative_Member_Id,
+                        firstName = p.Student.First_Name,
+                        lastName = p.Student.Last_Name,
+                        birthDate = p.Student.Birth_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                        cellphone = p.Student.Phone,
+                        faculty = p.Student.Faculty.Faculty_Name,
+                        career = p.Student.Career.Career_Name,
+                        semester = p.Student.Semester.Semester_Name,
+                        email = p.Student.Email,
+                        position = p.Role.Role_Name,
                     })
                     .FirstOrDefaultAsync();
 

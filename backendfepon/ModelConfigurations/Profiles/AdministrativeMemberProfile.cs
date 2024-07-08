@@ -10,15 +10,15 @@ namespace backendfepon.ModelConfigurations.Profiles
         {
             // Mapping from AdministrativeMember to AdministrativeMemberDTO
             CreateMap<AdministrativeMember, AdministrativeMemberDTO>()
-                .ForMember(dest => dest.Student_Name, opt => opt.MapFrom(src => src.Student.First_Name))
-                .ForMember(dest => dest.Student_LastName, opt => opt.MapFrom(src => src.Student.Last_Name))
-                .ForMember(dest => dest.Student_Birthday, opt => opt.MapFrom(src => src.Student.Birth_Date))
-                .ForMember(dest => dest.Student_Phone, opt => opt.MapFrom(src => src.Student.Phone))
-                .ForMember(dest => dest.Student_Faculty, opt => opt.MapFrom(src => src.Student.Faculty))
-                .ForMember(dest => dest.Student_Career, opt => opt.MapFrom(src => src.Student.Career))
-                .ForMember(dest => dest.Student_Semester, opt => opt.MapFrom(src => src.Student.Semester))
-                .ForMember(dest => dest.Student_Email, opt => opt.MapFrom(src => src.Student.Email))
-                .ForMember(dest => dest.Member_Role, opt => opt.MapFrom(src => src.Role.Role_Name));
+                .ForMember(dest => dest.firstName, opt => opt.MapFrom(src => src.Student.First_Name))
+                .ForMember(dest => dest.lastName, opt => opt.MapFrom(src => src.Student.Last_Name))
+                .ForMember(dest => dest.birthDate, opt => opt.MapFrom(src => src.Student.Birth_Date))
+                .ForMember(dest => dest.cellphone, opt => opt.MapFrom(src => src.Student.Phone))
+                .ForMember(dest => dest.faculty, opt => opt.MapFrom(src => src.Student.Faculty))
+                .ForMember(dest => dest.career, opt => opt.MapFrom(src => src.Student.Career))
+                .ForMember(dest => dest.semester, opt => opt.MapFrom(src => src.Student.Semester))
+                .ForMember(dest => dest.email, opt => opt.MapFrom(src => src.Student.Email))
+                .ForMember(dest => dest.position, opt => opt.MapFrom(src => src.Role.Role_Name));
 
             // Mapping from CreateUpdateAdministrativeMemberDTO to AdministrativeMember
             CreateMap<CreateUpdateAdministrativeMemberDTO, AdministrativeMember>()

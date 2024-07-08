@@ -2,16 +2,16 @@
 {
     public class AdministrativeMemberDTO
     {
-        public int Administrative_Member_Id { get; set; }
-        public string Student_Name { get; set; }
-        public string Student_LastName { get; set; }
-        public string Student_Birthday { get; set; }
-        public string Student_Phone { get; set; }
-        public string Student_Faculty { get; set; }
-        public string Student_Career { get; set; }
-        public string Student_Semester { get; set; }
-        public string Student_Email { get; set; }
-        public string Member_Role { get; set; }
+        public int id { get; set; }
+        public string firstName { get; set; }
+        public string lastName { get; set; }
+        public string birthDate { get; set; }
+        public string cellphone { get; set; }
+        public string faculty { get; set; }
+        public string career { get; set; }
+        public string semester { get; set; }
+        public string email { get; set; }
+        public string position { get; set; }
 
     }
 }
