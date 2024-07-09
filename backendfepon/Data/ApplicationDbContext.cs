@@ -39,6 +39,7 @@ namespace backendfepon.Data
         public DbSet<Faculty> Faculties { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<TransactionType> TransactionTypes { get; set; }
+        public DbSet<EventState> EventStates { get; set; }
 
 
 
@@ -75,6 +76,7 @@ namespace backendfepon.Data
             modelBuilder.ApplyConfiguration(new FinancialRequestConfiguration());
             modelBuilder.ApplyConfiguration(new AssociationConfiguration());
             modelBuilder.ApplyConfiguration(new TransactionTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new EventStateConfiguration());
 
             //cypher
             modelBuilder.ApplyConfiguration(new CAccountingAccountConfiguration());

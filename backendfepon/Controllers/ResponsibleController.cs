@@ -34,7 +34,7 @@ namespace backendfepon.Controllers
                     .Select(p => new ResponsibleDTO
                     {
                         Responsible_Id = p.Responsible_Id,
-                        AdministrativeMember_Name = p.AdministrativeMember.Student.First_Name + ' ' + p.AdministrativeMember.Student.Last_Name,
+                        AdministrativeMember_Name = p.AdministrativeMember.Name + ' ' + p.AdministrativeMember.Last_Name,
                         Event_Name = p.Event.Title,
                         Event_Role = p.Event_Role
                     })
@@ -61,7 +61,7 @@ namespace backendfepon.Controllers
                     .Select(p => new ResponsibleDTO
                     {
                         Responsible_Id = p.Responsible_Id,
-                        AdministrativeMember_Name = p.AdministrativeMember.Student.First_Name + ' ' + p.AdministrativeMember.Student.Last_Name,
+                        AdministrativeMember_Name = p.AdministrativeMember.Name + ' ' + p.AdministrativeMember.Name,
                         Event_Name = p.Event.Title,
                         Event_Role = p.Event_Role
                     })
@@ -86,7 +86,7 @@ namespace backendfepon.Controllers
         {
             try
             {
-                var administrativeMember = await _context.AdministrativeMembers.FirstOrDefaultAsync(am => am.Student.Email == responsibleDTO.AdministrativeMember_Email);
+                var administrativeMember = await _context.AdministrativeMembers.FirstOrDefaultAsync(am => am.Email == responsibleDTO.AdministrativeMember_Email);
                 if (administrativeMember == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Correo electrónico del miembro administrativo no válido."));
@@ -127,7 +127,7 @@ namespace backendfepon.Controllers
                     return BadRequest(GenerateErrorResponse(400, "ID de responsable no válido."));
                 }
 
-                var administrativeMember = await _context.AdministrativeMembers.FirstOrDefaultAsync(am => am.Student.Email == updatedResponsible.AdministrativeMember_Email);
+                var administrativeMember = await _context.AdministrativeMembers.FirstOrDefaultAsync(am => am.Email == updatedResponsible.AdministrativeMember_Email);
                 if (administrativeMember == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Correo electrónico del miembro administrativo no válido."));

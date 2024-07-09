@@ -12,9 +12,11 @@ namespace backendfepon.ModelConfigurations
             modelBuilder.HasKey(p => p.Contributor_Id);
 
             // Relationships
-            modelBuilder.HasOne(cp => cp.Student)
+            /*modelBuilder.HasOne(cp => cp.Student)
                 .WithOne(c => c.Contributor)
                 .HasForeignKey<Contributor>(c => c.Student_Id);
+            */
+
 
             // Relationships
             modelBuilder.HasOne(cp => cp.ContributionPlan)
@@ -30,6 +32,17 @@ namespace backendfepon.ModelConfigurations
                .HasOne(p => p.State)
                .WithMany(s => s.Contributors)
                .HasForeignKey(p => p.State_Id);
+
+            modelBuilder
+               .HasOne(p => p.Career)
+               .WithMany(s => s.Contributors)
+               .HasForeignKey(p => p.Career_Id);
+
+            modelBuilder
+               .HasOne(p => p.Faculty)
+               .WithMany(s => s.Contributors)
+               .HasForeignKey(p => p.Faculty_Id);
+
 
 
         }

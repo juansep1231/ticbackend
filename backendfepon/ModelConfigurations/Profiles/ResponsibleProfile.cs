@@ -10,7 +10,7 @@ namespace backendfepon.ModelConfigurations.Profiles
         {
             // Mapping from Responsible to ResponsibleDTO
             CreateMap<Responsible, ResponsibleDTO>()
-                .ForMember(dest => dest.AdministrativeMember_Name, opt => opt.MapFrom(src => src.AdministrativeMember.Student.First_Name + ' ' + src.AdministrativeMember.Student.Last_Name))
+                .ForMember(dest => dest.AdministrativeMember_Name, opt => opt.MapFrom(src => src.AdministrativeMember.Name + ' ' + src.AdministrativeMember.Last_Name))
                 .ForMember(dest => dest.Event_Name, opt => opt.MapFrom(src => src.Event.Title));
 
             // Mapping from CreateUpdateResponsibleDTO to Responsible

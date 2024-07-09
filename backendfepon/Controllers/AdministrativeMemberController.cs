@@ -17,11 +17,13 @@ namespace backendfepon.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly ILogger<EventController> _logger;
 
-        public AdministrativeMembersController(ApplicationDbContext context, IMapper mapper)
+        public AdministrativeMembersController(ApplicationDbContext context, IMapper mapper, ILogger<EventController> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
         // GET: api/AdministrativeMembers
@@ -31,19 +33,19 @@ namespace backendfepon.Controllers
             try
             {
                 var administrativeMembers = await _context.AdministrativeMembers
-                    .Include(e => e.Student)
+                    //.Include(e => e.Student)
                     .Where(p => p.State_Id == Constants.DEFAULT_STATE)
                     .Select(p => new AdministrativeMemberDTO
                     {
                         id = p.Administrative_Member_Id,
-                        firstName = p.Student.First_Name,
-                        lastName = p.Student.Last_Name,
-                        birthDate = p.Student.Birth_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
-                        cellphone = p.Student.Phone,
-                        faculty = p.Student.Faculty.Faculty_Name,
-                        career = p.Student.Career.Career_Name,
-                        semester = p.Student.Semester.Semester_Name,
-                        email = p.Student.Email,
+                        firstName = p.Name,
+                        lastName = p.Last_Name,
+                        birthDate = p.Birth_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                        cellphone = p.Phone,
+                        faculty = p.Faculty.Faculty_Name,
+                        career = p.Career.Career_Name,
+                        semester = p.Semester.Semester_Name,
+                        email = p.Email,
                         position = p.Role.Role_Name
                     })
                     .ToListAsync();
@@ -63,19 +65,20 @@ namespace backendfepon.Controllers
             try
             {
                 var administrativeMember = await _context.AdministrativeMembers
-                    .Include(e => e.Student)
+                    //.Include(e => e.Student)
                     .Where(p => p.State_Id == Constants.DEFAULT_STATE && p.Administrative_Member_Id == id)
                     .Select(p => new AdministrativeMemberDTO
                     {
                         id = p.Administrative_Member_Id,
-                        firstName = p.Student.First_Name,
-                        lastName = p.Student.Last_Name,
-                        birthDate = p.Student.Birth_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
-                        cellphone = p.Student.Phone,
-                        faculty = p.Student.Faculty.Faculty_Name,
-                        career = p.Student.Career.Career_Name,
-                        semester = p.Student.Semester.Semester_Name,
-                        email = p.Student.Email,
+                        firstName = p.Name,
+                        lastName = p.Last_Name,
+                        //birthDate = p.Birth_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                        birthDate = p.Birth_Date.ToString(),
+                        cellphone = p.Phone,
+                        faculty = p.Faculty.Faculty_Name,
+                        career = p.Career.Career_Name,
+                        semester = p.Semester.Semester_Name,
+                        email = p.Email,
                         position = p.Role.Role_Name,
                     })
                     .FirstOrDefaultAsync();
@@ -92,7 +95,7 @@ namespace backendfepon.Controllers
                 return StatusCode(500, GenerateErrorResponse(500, "\"Ocurrió un error interno del servidor, no es posible obtenet el miembro administrativo"));
             }
         }
-
+        /*
         // POST: api/AdministrativeMembers
         [HttpPost]
         public async Task<ActionResult<AdministrativeMemberDTO>> PostAdministrativeMember(CreateUpdateAdministrativeMemberDTO administrativeMemberDTO)
@@ -112,7 +115,7 @@ namespace backendfepon.Controllers
                 }
 
                 var administrativeMember = _mapper.Map<AdministrativeMember>(administrativeMemberDTO);
-                administrativeMember.Student_Id = student.Student_Id;
+                //administrativeMember.Student_Id = student.Student_Id;
                 administrativeMember.Role_Id = role.Role_Id;
                 administrativeMember.State_Id = Constants.DEFAULT_STATE;
 
@@ -128,36 +131,116 @@ namespace backendfepon.Controllers
                 return StatusCode(500, GenerateErrorResponse(500, "\"Ocurrió un error interno del servidor, no es posible crear el miembro administrativo"));
             }
         }
+        */
 
-        // PUT: api/AdministrativeMembers/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAdministrativeMember(int id, CreateUpdateAdministrativeMemberDTO updatedAdministrativeMember)
+        [HttpPost]
+        public async Task<ActionResult<AdministrativeMemberDTO>> PostAdministrativeMember(CreateUpdateAdministrativeMemberDTO administrativeMemberDTO)
         {
             try
             {
-                var administrativeMember = await _context.AdministrativeMembers.FindAsync(id);
-                if (administrativeMember == null)
+                // Verificar si el Faculty existe
+                var faculty = await _context.Faculties.FirstOrDefaultAsync(f => f.Faculty_Name == administrativeMemberDTO.Faculty);
+                if (faculty == null)
                 {
-                    return BadRequest(GenerateErrorResponse(400, "ID del miembro administrativo no válido."));
+                    return BadRequest(GenerateErrorResponse(400, "Nombre de facultad no válido."));
                 }
 
-                var student = await _context.Students.FirstOrDefaultAsync(s => s.Email == updatedAdministrativeMember.Student_Email);
-                if (student == null)
+                // Verificar si el Career existe
+                var career = await _context.Careers.FirstOrDefaultAsync(c => c.Career_Name == administrativeMemberDTO.Career);
+                if (career == null)
                 {
-                    return BadRequest(GenerateErrorResponse(400, "Correo electrónico del estudiante no válido."));
+                    return BadRequest(GenerateErrorResponse(400, "Nombre de carrera no válido."));
                 }
 
-                var role = await _context.Roles.FirstOrDefaultAsync(s => s.Role_Name == updatedAdministrativeMember.Member_Role);
+                // Verificar si el Semester existe
+                var semester = await _context.Semesters.FirstOrDefaultAsync(s => s.Semester_Name == administrativeMemberDTO.Semester);
+                if (semester == null)
+                {
+                    return BadRequest(GenerateErrorResponse(400, "Nombre de semestre no válido."));
+                }
+                
+                
+
+                // Verificar si el Role existe
+                var role = await _context.Roles.FirstOrDefaultAsync(r => r.Role_Name == administrativeMemberDTO.Position);
                 if (role == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Rol no válido."));
                 }
 
-                _mapper.Map(updatedAdministrativeMember, administrativeMember);
-                administrativeMember.Student_Id = student.Student_Id;
+                // Mapear el DTO a la entidad del modelo
+                var administrativeMember = _mapper.Map<AdministrativeMember>(administrativeMemberDTO);
+                _logger.LogInformation("////////////////////////////////////");
+                //administrativeMember.Birth_Date = DateTime.Now;
+                administrativeMember.Faculty_Id = faculty.Faculty_Id;
+                administrativeMember.Career_Id = career.Career_Id;
+                administrativeMember.Semester_Id = semester.Semester_Id;
                 administrativeMember.Role_Id = role.Role_Id;
 
-                _context.Entry(administrativeMember).State = EntityState.Modified;
+                administrativeMember.State_Id = Constants.DEFAULT_STATE;
+                
+
+                // Guardar la nueva entidad en la base de datos
+                _context.AdministrativeMembers.Add(administrativeMember);
+                await _context.SaveChangesAsync();
+                
+                // Mapear la entidad creada de vuelta al DTO
+                var createdAdministrativeMemberDTO = _mapper.Map<AdministrativeMemberDTO>(administrativeMember);
+                
+
+                // Devolver la respuesta con el nuevo miembro administrativo creado
+                return CreatedAtAction(nameof(GetAdministrativeMember), new { id = administrativeMember.Administrative_Member_Id }, createdAdministrativeMemberDTO);
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear el miembro administrativo."));
+            }
+        }
+
+
+        // PUT: api/AdministrativeMembers/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutAdministrativeMember(int id, CreateUpdateAdministrativeMemberDTO administrativeMemberDTO)
+        {
+            try
+            {
+                var existingMember = await _context.AdministrativeMembers.FindAsync(id);
+                if (existingMember == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Miembro administrativo no encontrado."));
+                }
+
+                var faculty = await _context.Faculties.FirstOrDefaultAsync(f => f.Faculty_Name == administrativeMemberDTO.Faculty);
+                if (faculty == null)
+                {
+                    return BadRequest(GenerateErrorResponse(400, "Nombre de facultad no válido."));
+                }
+
+                var career = await _context.Careers.FirstOrDefaultAsync(c => c.Career_Name == administrativeMemberDTO.Career);
+                if (career == null)
+                {
+                    return BadRequest(GenerateErrorResponse(400, "Nombre de carrera no válido."));
+                }
+
+                var semester = await _context.Semesters.FirstOrDefaultAsync(s => s.Semester_Name == administrativeMemberDTO.Semester);
+                if (semester == null)
+                {
+                    return BadRequest(GenerateErrorResponse(400, "Nombre de semestre no válido."));
+                }
+
+                var role = await _context.Roles.FirstOrDefaultAsync(r => r.Role_Name == administrativeMemberDTO.Position);
+                if (role == null)
+                {
+                    return BadRequest(GenerateErrorResponse(400, "Rol no válido."));
+                }
+
+                _mapper.Map(administrativeMemberDTO, existingMember);
+                existingMember.Faculty_Id = faculty.Faculty_Id;
+                existingMember.Career_Id = career.Career_Id;
+                existingMember.Semester_Id = semester.Semester_Id;
+                existingMember.Role_Id = role.Role_Id;
+
+                _context.Entry(existingMember).State = EntityState.Modified;
 
                 try
                 {
@@ -179,9 +262,12 @@ namespace backendfepon.Controllers
             }
             catch
             {
-                return StatusCode(500, GenerateErrorResponse(500, "\"Ocurrió un error interno del servidor, no es posible actualizar el miembro administrativo"));
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar el miembro administrativo."));
             }
         }
+
+    
+
 
         // DELETE: api/AdministrativeMembers/5
         [HttpDelete("{id}")]

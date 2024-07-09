@@ -33,7 +33,7 @@ namespace backendfepon.Controllers
                         Expense_Id = p.Expense_Id,
                         Transaction_Id = p.Transaction_Id,
                         Event_Name = p.Event.Title,
-                        Responsible_Name = p.Responsible.AdministrativeMember.Student.Last_Name,
+                        Responsible_Name = p.Responsible.AdministrativeMember.Name,
                         Provider_Names = p.Providers.Select(provider => provider.Name).ToList()
                     })
                     .ToListAsync();
@@ -63,7 +63,7 @@ namespace backendfepon.Controllers
                         Expense_Id = p.Expense_Id,
                         Transaction_Id = p.Transaction_Id,
                         Event_Name = p.Event.Title,
-                        Responsible_Name = p.Responsible.AdministrativeMember.Student.Last_Name,
+                        Responsible_Name = p.Responsible.AdministrativeMember.Name,
                         Provider_Names = p.Providers.Select(provider => provider.Name).ToList()
                     })
                     .FirstOrDefaultAsync();

@@ -4,6 +4,7 @@ namespace backendfepon.DTOs.ContributorDTO
 {
     public class ContributorDTO
     {
+        /*
         public int Contributor_Id { get; set; }
         public int Transaction_Id { get; set; }
         public string Plan_Name { get; set; }
@@ -17,7 +18,16 @@ namespace backendfepon.DTOs.ContributorDTO
         public string Student_Career { get; set; }
 
         public string Student_Email { get; set; }
+        */
 
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public string Name { get; set; }
+        public string Faculty { get; set; }
+        public string Career { get; set; }
+        public string Email { get; set; }
+        public string Plan { get; set; }
+        public string Price { get; set; }
     }
 }
 
