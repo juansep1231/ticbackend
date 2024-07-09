@@ -171,11 +171,12 @@ namespace backendfepon.Controllers
                 // Mapear el DTO a la entidad del modelo
                 var administrativeMember = _mapper.Map<AdministrativeMember>(administrativeMemberDTO);
                 _logger.LogInformation("////////////////////////////////////");
-                administrativeMember.Birth_Date = DateTime.Now;
+                //administrativeMember.Birth_Date = DateTime.Now;
                 administrativeMember.Faculty_Id = faculty.Faculty_Id;
                 administrativeMember.Career_Id = career.Career_Id;
                 administrativeMember.Semester_Id = semester.Semester_Id;
                 administrativeMember.Role_Id = role.Role_Id;
+
                 administrativeMember.State_Id = Constants.DEFAULT_STATE;
                 
 

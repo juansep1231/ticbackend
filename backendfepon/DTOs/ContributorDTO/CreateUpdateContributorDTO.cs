@@ -2,8 +2,12 @@
 {
     public class CreateUpdateContributorDTO
     {
-        public string Plan_Name { get; set; }
-        public int Transaction_Id { get; set; }
-        public string Student_Email { get; set; }
+        public DateTime Date { get; set; }
+        public string Name { get; set; }
+        public string Faculty { get; set; }
+        public string Career { get; set; }
+        public string Email { get; set; }
+        public string Plan { get; set; }
+        public string Price { get; set; }
     }
 }
