@@ -1,8 +1,10 @@
-﻿using backendfepon.Data;
+﻿using AutoMapper;
+using backendfepon.Data;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.DTOs.ProviderDTOs;
 using backendfepon.DTOs.TransactionDTOs;
 using backendfepon.Models;
+using backendfepon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Numerics;
@@ -14,10 +16,11 @@ namespace backendfepon.Controllers
     public class ProviderController : BaseController
     {
         private readonly ApplicationDbContext _context;
-
-        public ProviderController(ApplicationDbContext context)
+        private readonly IMapper _mapper;
+        public ProviderController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Providers
@@ -27,12 +30,15 @@ namespace backendfepon.Controllers
             try
             {
                 var providers = await _context.Providers
+                    .Include(p => p.State)
+                     .Where(p => p.State_Id == Constants.DEFAULT_STATE)
                     .Select(p => new ProviderDTO
                     {
-                        Provider_Id = p.Provider_Id,
-                        Name = p.Name,
-                        Phone = p.Phone,
-                        Email = p.Email
+                        id = p.Provider_Id,
+                        stateid = p.State_Id,
+                        name = p.Name,
+                        phone = p.Phone,
+                        email = p.Email
                     })
                     .ToListAsync();
 
@@ -51,13 +57,16 @@ namespace backendfepon.Controllers
             try
             {
                 var provider = await _context.Providers
+                    .Include(p => p.State)
                     .Where(p => p.Provider_Id == id)
+                    .Where(p => p.State_Id == Constants.DEFAULT_STATE)
                     .Select(p => new ProviderDTO
                     {
-                        Provider_Id = p.Provider_Id,
-                        Name = p.Name,
-                        Phone = p.Phone,
-                        Email = p.Email
+                        id = p.Provider_Id,
+                        stateid = p.State_Id,
+                        name = p.Name,
+                        phone = p.Phone,
+                        email = p.Email
                     })
                     .FirstOrDefaultAsync();
 
@@ -80,29 +89,31 @@ namespace backendfepon.Controllers
         {
             try
             {
-                var provider = new Provider
-                {
-                    Name = providerDTO.Name,
-                    Phone = providerDTO.Phone,
-                    Email = providerDTO.Email
-                };
+                var provider = _mapper.Map<Provider>(providerDTO);
+                provider.State_Id = Constants.DEFAULT_STATE;
+
 
                 _context.Providers.Add(provider);
                 await _context.SaveChangesAsync();
 
-                var createdProviderDTO = new ProviderDTO
-                {
-                    Provider_Id = provider.Provider_Id,
-                    Name = provider.Name,
-                    Phone = provider.Phone,
-                    Email = provider.Email
-                };
+                var createdProviderDTO = _mapper.Map<ProviderDTO>(provider);
 
                 return CreatedAtAction(nameof(GetProvider), new { id = provider.Provider_Id }, createdProviderDTO);
             }
-            catch
+            catch (DbUpdateException ex)
             {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear el servidor"));
+                // Handle database update exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Error al actualizar la base de datos, no es posible crear el proveedor", ex));
+            }
+            catch (AutoMapperMappingException ex)
+            {
+                // Handle AutoMapper exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Error en la configuración del mapeo, no es posible crear el proveedor", ex));
+            }
+            catch (Exception ex)
+            {
+                // Handle all other exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear el proveedor", ex));
             }
         }
 
@@ -118,9 +129,9 @@ namespace backendfepon.Controllers
                     return BadRequest(GenerateErrorResponse(400, "ID de proveedor no válido."));
                 }
 
-                provider.Name = updatedProvider.Name;
-                provider.Phone = updatedProvider.Phone;
-                provider.Email = updatedProvider.Email;
+                provider.Name = updatedProvider.name;
+                provider.Phone = updatedProvider.phone;
+                provider.Email = updatedProvider.email;
 
                 _context.Entry(provider).State = EntityState.Modified;
 
@@ -171,6 +182,43 @@ namespace backendfepon.Controllers
             }
         }
 
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> PatchProviderState(int id)
+        {
+            try
+            {
+                var provider = await _context.Providers.FindAsync(id);
+                if (provider == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Proveedor no encontrado."));
+                }
+
+                provider.State_Id = Constants.STATE_INACTIVE;
+                _context.Entry(provider).State = EntityState.Modified;
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ProviderExists(id))
+                    {
+                        return NotFound(GenerateErrorResponse(404, "Proveedor no encontrado."));
+                    }
+                    else
+                    {
+                        return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error de concurrencia."));
+                    }
+                }
+
+                return NoContent();
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar el estado"));
+            }
+        }
         private bool ProviderExists(int id)
         {
             return _context.Providers.Any(e => e.Provider_Id == id);

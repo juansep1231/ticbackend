@@ -15,16 +15,16 @@ namespace backendfepon.ModelConfigurations
                .WithMany(s => s.InventoryMovements)
                .HasForeignKey(p => p.Product_Id);
 
-            modelBuilder
-               .HasOne(p => p.Transaction)
-               .WithOne(s => s.InventoryMovement)
-               .HasForeignKey<InventoryMovement>(p => p.Transaction_Id);
-
 
             modelBuilder
                .HasOne(p => p.InventoryMovementType)
                .WithMany(s => s.InventoryMovements)
                .HasForeignKey(p => p.Inventory_Movement_Id);
+
+            modelBuilder
+              .HasOne(p => p.State)
+              .WithMany(s => s.InventoryMovements)
+              .HasForeignKey(p => p.State_Id);
         }
     }
 }

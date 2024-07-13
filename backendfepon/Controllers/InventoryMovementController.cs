@@ -4,8 +4,11 @@ using backendfepon.DTOs.InventoryMovementDTOs;
 using backendfepon.DTOs.InventoryMovementTypeDTO;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.Models;
+using backendfepon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using System.Reflection.Metadata;
 
 namespace backendfepon.Controllers
 {
@@ -29,17 +32,18 @@ namespace backendfepon.Controllers
             try
             {
                 var inventoryMovements = await _context.InventoryMovements
-                    .Include(p => p.Transaction)
                     .Include(p => p.InventoryMovementType)
                     .Include(p => p.Product)
+                    .Include(p => p.State)
+                    .Where(p => p.State_Id == Constants.DEFAULT_STATE)
                     .Select(p => new InventoryMovementDTO
                     {
-                        Movement_Id = p.Movement_Id,
-                        Transaction_Id = p.Transaction_Id,
-                        Inventory_Movement_Name = p.InventoryMovementType.Movement_Type_Name,
-                        Product_Name = p.Product.Name,
-                        Quantity = p.Quantity,
-                        Date = p.Date
+                        id = p.Movement_Id,
+                        stateid = p.State_Id,
+                        movementType = p.InventoryMovementType.Movement_Type_Name,
+                        product = p.Product.Name,
+                        quantity = p.Quantity,
+                        date = p.Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)
                     })
                     .ToListAsync();
 
@@ -58,18 +62,19 @@ namespace backendfepon.Controllers
             try
             {
                 var inventoryMovement = await _context.InventoryMovements
-                    .Include(p => p.Transaction)
                     .Include(p => p.InventoryMovementType)
                     .Include(p => p.Product)
+                    .Include(p => p.State)
                     .Where(p => p.Movement_Id == id)
+                    .Where(p => p.State_Id == Constants.DEFAULT_STATE)
                     .Select(p => new InventoryMovementDTO
                     {
-                        Movement_Id = p.Movement_Id,
-                        Transaction_Id = p.Transaction_Id,
-                        Inventory_Movement_Name = p.InventoryMovementType.Movement_Type_Name,
-                        Product_Name = p.Product.Name,
-                        Quantity = p.Quantity,
-                        Date = p.Date
+                        id = p.Movement_Id,
+                        stateid = p.State_Id,
+                        movementType = p.InventoryMovementType.Movement_Type_Name,
+                        product = p.Product.Name,
+                        quantity = p.Quantity,
+                        date = p.Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)
                     })
                     .FirstOrDefaultAsync();
 
@@ -92,21 +97,44 @@ namespace backendfepon.Controllers
         {
             try
             {
-                var product = await _context.Products.FirstOrDefaultAsync(p => p.Name == inventoryMovementDTO.Product_Name);
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.Name == inventoryMovementDTO.product_Name);
                 if (product == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Nombre del producto no válido."));
                 }
 
-                var inventoryMovementType = await _context.InventoryMovementTypes.FirstOrDefaultAsync(imt => imt.Movement_Type_Name == inventoryMovementDTO.Inventory_Movement_Type_Name);
+                var inventoryMovementType = await _context.InventoryMovementTypes.FirstOrDefaultAsync(imt => imt.Movement_Type_Name == inventoryMovementDTO.inventory_Movement_Type_Name);
                 if (inventoryMovementType == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Nombre del tipo de movimiento de inventario no válido."));
                 }
 
+                if (ProductExist(product.Product_Id))
+                {
+                    if (inventoryMovementType.Movement_Type_Id==1)
+                    {
+                        product.Quantity += inventoryMovementDTO.quantity;
+                    }
+                    else
+                    {
+                        product.Quantity -= inventoryMovementDTO.quantity;
+                    }
+
+                    _context.Entry(product).State = EntityState.Modified;
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error de concurrencia."));
+                    }
+                }
+
                 var inventoryMovement = _mapper.Map<InventoryMovement>(inventoryMovementDTO);
                 inventoryMovement.Product_Id = product.Product_Id;
                 inventoryMovement.Inventory_Movement_Id = inventoryMovementType.Movement_Type_Id;
+                inventoryMovement.State_Id = Constants.DEFAULT_STATE;
 
                 _context.InventoryMovements.Add(inventoryMovement);
                 await _context.SaveChangesAsync();
@@ -114,11 +142,25 @@ namespace backendfepon.Controllers
                 var createdInventoryMovementDTO = _mapper.Map<InventoryMovementDTO>(inventoryMovement);
 
                 return CreatedAtAction(nameof(GetInventoryMovement), new { id = inventoryMovement.Movement_Id }, createdInventoryMovementDTO);
+
+
             }
-            catch
+            catch (DbUpdateException ex)
             {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear el movimiento de inventario"));
+                // Handle database update exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Error al actualizar la base de datos, no es posible crear el movimiento de inventario", ex));
             }
+            catch (AutoMapperMappingException ex)
+            {
+                // Handle AutoMapper exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Error en la configuración del mapeo, no es posible crear el movimiento de inventario", ex));
+            }
+            catch (Exception ex)
+            {
+                // Handle all other exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear el movimiento de inventario", ex));
+            }
+          
         }
 
         // PUT: api/InventoryMovement/5
@@ -133,13 +175,13 @@ namespace backendfepon.Controllers
                     return BadRequest(GenerateErrorResponse(400, "ID del movimiento de inventario no válido."));
                 }
 
-                var product = await _context.Products.FirstOrDefaultAsync(p => p.Name == updatedInventoryMovement.Product_Name);
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.Name == updatedInventoryMovement.product_Name);
                 if (product == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Nombre del producto no válido."));
                 }
 
-                var inventoryMovementType = await _context.InventoryMovementTypes.FirstOrDefaultAsync(imt => imt.Movement_Type_Name == updatedInventoryMovement.Inventory_Movement_Type_Name);
+                var inventoryMovementType = await _context.InventoryMovementTypes.FirstOrDefaultAsync(imt => imt.Movement_Type_Name == updatedInventoryMovement.inventory_Movement_Type_Name);
                 if (inventoryMovementType == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Nombre del tipo de movimiento de inventario no válido."));
@@ -169,9 +211,20 @@ namespace backendfepon.Controllers
 
                 return NoContent();
             }
-            catch
+            catch (DbUpdateException ex)
             {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar el movimiento de inventario"));
+                // Handle database update exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Error al actualizar la base de datos, no es posible crear el movimiento de inventario", ex));
+            }
+            catch (AutoMapperMappingException ex)
+            {
+                // Handle AutoMapper exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Error en la configuración del mapeo, no es posible crear el movimiento de inventario", ex));
+            }
+            catch (Exception ex)
+            {
+                // Handle all other exceptions
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear el movimiento de inventario", ex));
             }
         }
 
@@ -197,10 +250,53 @@ namespace backendfepon.Controllers
                 return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar el movimiento de inventario"));
             }
         }
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> PatchInventoryMovementState(int id)
+        {
+            try
+            {
+                var inventoryMovement = await _context.InventoryMovements.FindAsync(id);
+                if (inventoryMovement == null)
+                {
+                    return NotFound(GenerateErrorResponse(404, "Movimiento de inventario no encontrado."));
+                }
+
+                inventoryMovement.State_Id = Constants.STATE_INACTIVE;
+                _context.Entry(inventoryMovement).State = EntityState.Modified;
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!InventoryMovementExists(id))
+                    {
+                        return NotFound(GenerateErrorResponse(404, "Movimiento de inventario no encontrado."));
+                    }
+                    else
+                    {
+                        return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error de concurrencia."));
+                    }
+                }
+
+                return NoContent();
+            }
+            catch
+            {
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar el estado"));
+            }
+        }
+
 
         private bool InventoryMovementExists(int id)
         {
             return _context.InventoryMovements.Any(e => e.Movement_Id == id);
+        }
+
+        private bool ProductExist(int id)
+        {
+            return _context.Products.Any(e => e.Product_Id == id);
         }
     }
 }

@@ -20,27 +20,11 @@ namespace backendfepon.ModelConfigurations
                 .WithOne(c => c.EventExpense)
                 .HasForeignKey<EventExpense>(e => e.Transaction_Id);
 
-            modelBuilder.HasOne(e => e.Event)
+            /*modelBuilder.HasOne(e => e.Event)
                 .WithMany(c => c.EventExpenses)
-                .HasForeignKey(e => e.Event_Id);
+                .HasForeignKey(e => e.Event_Id);*/
 
-            // Many-to-many relationship configuration
-            modelBuilder.HasMany(e => e.Providers)
-                .WithMany(p => p.EventExpenses)
-                .UsingEntity<Dictionary<string, object>>(
-                    "EventExpenseProvider",
-                    j => j
-                        .HasOne<Provider>()
-                        .WithMany()
-                        .HasForeignKey("ProvidersProvider_Id")
-                        .HasConstraintName("FK_EventExpenseProvider_Provider"),
-                    j => j
-                        .HasOne<EventExpense>()
-                        .WithMany()
-                        .HasForeignKey("EventExpensesExpense_Id")
-                        .HasConstraintName("FK_EventExpenseProvider_EventExpense")
-                );
-
+           
 
 
         }

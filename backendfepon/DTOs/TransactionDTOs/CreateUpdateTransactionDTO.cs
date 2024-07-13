@@ -2,10 +2,13 @@
 {
     public class CreateUpdateTransactionDTO
     {
-        public DateTime Date { get; set; }
-        public int Origin_Account { get; set; }
-        public int Destination_Account { get; set; }
-        public decimal Value { get; set; }
-        public string Reason { get; set; }
+
+        public DateTime date { get; set; }
+        public string transactionType { get; set; }
+        public string originAccount { get; set; }
+        public string destinationAccount { get; set; }
+        public decimal value { get; set; }
+        public string description { get; set; }
+
     }
 }
