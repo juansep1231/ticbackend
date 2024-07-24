@@ -2,6 +2,7 @@
 using backendfepon.DTOs.AssociationDTOs;
 using backendfepon.DTOs.FinantialRequestStateDTOs;
 using backendfepon.DTOs.StateDTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FinantialRequestStateController : BaseController
     {
         private readonly ApplicationDbContext _context;

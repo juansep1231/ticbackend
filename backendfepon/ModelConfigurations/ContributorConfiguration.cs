@@ -11,22 +11,11 @@ namespace backendfepon.ModelConfigurations
             modelBuilder.ToTable("CONTRIBUTOR");
             modelBuilder.HasKey(p => p.Contributor_Id);
 
-            // Relationships
-            /*modelBuilder.HasOne(cp => cp.Student)
-                .WithOne(c => c.Contributor)
-                .HasForeignKey<Contributor>(c => c.Student_Id);
-            */
-
 
             // Relationships
             modelBuilder.HasOne(cp => cp.ContributionPlan)
                 .WithMany(c => c.Contributors)
                 .HasForeignKey(c => c.Plan_Id);
-
-            // Relationships
-            modelBuilder.HasOne(cp => cp.Transaction)
-                .WithOne(c => c.Contributor)
-                .HasForeignKey<Contributor>(c => c.Transaction_Id);
 
             modelBuilder
                .HasOne(p => p.State)

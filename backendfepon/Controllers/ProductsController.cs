@@ -5,12 +5,14 @@ using backendfepon.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backendfepon.Utils;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductsController : BaseController
     {
         
@@ -97,12 +99,13 @@ namespace backendfepon.Controllers
 
         // POST: api/Products
         [HttpPost]
+        [Authorize(Policy = "InventoryOnly")]
         public async Task<ActionResult<ProductDTO>> PostProduct(CreateUpdateProductDTO productDTO)
         {
             try
             {
-                var productExist = await _context.Products.FirstOrDefaultAsync(c => c.Name == productDTO.name);
-                if (productExist.Name == productDTO.name)
+                //var productExist = await _context.Products.FirstOrDefaultAsync(c => c.Name == productDTO.name);
+                if (ProductExistsName(productDTO.name))
                 {
                     return BadRequest(GenerateErrorResponse(400, "El producto ya existe."));
                 }
@@ -138,6 +141,7 @@ namespace backendfepon.Controllers
 
         // PUT: api/Products/5
         [HttpPut("{id}")]
+        [Authorize(Policy = "InventoryOnly")]
         public async Task<IActionResult> PutProduct(int id, CreateUpdateProductDTO updatedProductDTO)
         {
             try
@@ -191,31 +195,10 @@ namespace backendfepon.Controllers
             }
         }
 
-        // DELETE: api/Products/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
-        {
-            try
-            {
-                var product = await _context.Products.FindAsync(id);
-                if (product == null)
-                {
-                    return NotFound(GenerateErrorResponse(404, "Producto no encontrado."));
-                }
-
-                _context.Products.Remove(product);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
-            }
-            catch
-            {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar el producto."));
-            }
-        }
 
         // PATCH: api/Products/5
         [HttpPatch("{id}")]
+        [Authorize(Policy = "InventoryOnly")]
         public async Task<IActionResult> PatchProductState(int id)
         {
             try
@@ -256,6 +239,11 @@ namespace backendfepon.Controllers
         private bool ProductExists(int id)
         {
             return _context.Products.Any(e => e.Product_Id == id);
+        }
+
+        private bool ProductExistsName(string name)
+        {
+            return _context.Products.Any(e => e.Name == name);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using backendfepon.Data;
 using backendfepon.DTOs.EventStateDTO;
 using backendfepon.DTOs.StateDTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EventStateController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -35,7 +37,7 @@ namespace backendfepon.Controllers
             }
             catch
             {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no se puede obtener los estados"));
+                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no se puede obtener los estados del evento"));
             }
         }
 

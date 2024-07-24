@@ -3,6 +3,7 @@ using backendfepon.DTOs.EventDTOs;
 using backendfepon.DTOs.EventExpenseDTO;
 using backendfepon.DTOs.EventIncomeDTOs;
 using backendfepon.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EventIncomeController : BaseController
     {
         private readonly ApplicationDbContext _context;

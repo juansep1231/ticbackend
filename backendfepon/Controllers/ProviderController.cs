@@ -5,6 +5,7 @@ using backendfepon.DTOs.ProviderDTOs;
 using backendfepon.DTOs.TransactionDTOs;
 using backendfepon.Models;
 using backendfepon.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Numerics;
@@ -13,6 +14,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProviderController : BaseController
     {
         private readonly ApplicationDbContext _context;
@@ -85,6 +87,7 @@ namespace backendfepon.Controllers
 
         // POST: api/Provider
         [HttpPost]
+        [Authorize(Policy = "InventoryOnly")]
         public async Task<ActionResult<ProviderDTO>> PostProvider(CreateUpdateProviderDTO providerDTO)
         {
             try
@@ -119,6 +122,7 @@ namespace backendfepon.Controllers
 
         // PUT: api/Providers/5
         [HttpPut("{id}")]
+        [Authorize(Policy = "InventoryOnly")]
         public async Task<IActionResult> PutProvider(int id, CreateUpdateProviderDTO updatedProvider)
         {
             try
@@ -159,30 +163,9 @@ namespace backendfepon.Controllers
             }
         }
 
-        // DELETE: api/Provider/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProvider(int id)
-        {
-            try
-            {
-                var provider = await _context.Providers.FindAsync(id);
-                if (provider == null)
-                {
-                    return NotFound(GenerateErrorResponse(404, "Proveedor no encontrado."));
-                }
-
-                _context.Providers.Remove(provider);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
-            }
-            catch
-            {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar el proveedor."));
-            }
-        }
 
         [HttpPatch("{id}")]
+        [Authorize(Policy = "InventoryOnly")]
         public async Task<IActionResult> PatchProviderState(int id)
         {
             try

@@ -4,6 +4,7 @@ using backendfepon.DTOs.EventDTOs;
 using backendfepon.DTOs.EventExpenseDTO;
 using backendfepon.DTOs.PermissionDTOs;
 using backendfepon.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PermissionController : BaseController
     {
         private readonly ApplicationDbContext _context;
@@ -29,11 +31,11 @@ namespace backendfepon.Controllers
             try
             {
                 var permissions = await _context.Permissions
-                   // .Include(p => p.Event)
+                    // .Include(p => p.Event)
                     .Select(p => new PermissionDTO
                     {
                         Permission_Id = p.Permission_Id,
-                       // Event_Name = p.Event.Title,
+                        // Event_Name = p.Event.Title,
                         Request = p.Request,
                         Request_Status = p.FinancialRequestState.State_Description
                     })
@@ -80,6 +82,7 @@ namespace backendfepon.Controllers
 
         // POST: api/Permission
         [HttpPost]
+        [Authorize(Policy = "EventOnly")]
         public async Task<ActionResult<PermissionDTO>> PostPermission(CreateUpdatePermissionDTO permissionDTO)
         {
             try
@@ -105,54 +108,9 @@ namespace backendfepon.Controllers
                 return StatusCode(500, "Ocurrió un error interno del servidor, no es posible crear el permiso");
             }
         }
-        /*
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPermission(int id, CreateUpdatePermissionDTO permissionDTO)
-        {
-            try
-            {
-                var newPermission = new Permission();
-                var existingEvent = await _context.Events.FindAsync(id);
-                if (existingEvent == null)
-                {
-                    return NotFound("El evento no existe.");
-                }
-
-                // Mapea los valores del DTO a la entidad existente
-                _mapper.Map(permissionDTO, newPermission);
-
-                // Actualiza el Status_Id basado en el Request_Status proporcionado
-                var status = await _context.FinancialRequestStates.FirstOrDefaultAsync(s => s.State_Description == permissionDTO.Request_Status);
-                if (status == null)
-                {
-                    return BadRequest("Estado de solicitud no válido.");
-                }
-                existingEvent.Status_Id = status.Request_State_Id;
-
-                _context.Entry(existingEvent).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-
-                return NoContent();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PermissionExists(id))
-                {
-                    return NotFound("El permiso no existe.");
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Ocurrió un error interno del servidor: {ex.Message}");
-            }
-        }
-        */
 
         [HttpPut("/updatePermission/{id}")]
+        [Authorize(Policy = "EventOnly")]
         public async Task<IActionResult> UpdateEventPermission(int id, CreateUpdatePermissionDTO permissionDTO)
         {
             try
@@ -195,31 +153,6 @@ namespace backendfepon.Controllers
             }
         }
 
-
-
-
-        // DELETE: api/Permission/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePermission(int id)
-        {
-            try
-            {
-                var permission = await _context.Permissions.FindAsync(id);
-                if (permission == null)
-                {
-                    return NotFound(GenerateErrorResponse(404, "Permiso no encontrado."));
-                }
-
-                _context.Permissions.Remove(permission);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
-            }
-            catch
-            {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar el permiso"));
-            }
-        }
 
         private bool PermissionExists(int id)
         {

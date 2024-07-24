@@ -5,6 +5,7 @@ using backendfepon.DTOs.ContributorDTO;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.Models;
 using backendfepon.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -13,17 +14,16 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ContributorController : BaseController
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        private readonly ILogger<EventController> _logger;
 
-        public ContributorController(ApplicationDbContext context, IMapper mapper, ILogger<EventController> logger)
+        public ContributorController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _logger = logger;
         }
 
         // GET: api/Contributor
@@ -33,21 +33,22 @@ namespace backendfepon.Controllers
             try
             {
                 var contributors = await _context.Contributors
-                    .Include(t => t.Transaction)
                     .Include(p => p.State)
                     .Include(t => t.ContributionPlan)
+                    .ThenInclude(cp => cp.AcademicPeriod)
                     .Where(p => p.State_Id == Constants.DEFAULT_STATE)
                     .Select(p => new ContributorDTO
                     {
-                        Id = p.Contributor_Id,
-                        Plan = p.ContributionPlan.Name,
-                        State_id = p.State_Id,
-                        Price = p.ContributionPlan.Economic_Value.ToString(),
-                        Date = p.Contributor_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
-                        Name = p.Name,
-                        Career = p.Career.Career_Name,
-                        Faculty = p.Faculty.Faculty_Name,
-                        Email = p.Email,
+                        id = p.Contributor_Id,
+                        plan = p.ContributionPlan.Name,
+                        state_id = p.State_Id,
+                        price = p.ContributionPlan.Economic_Value,
+                        date = p.Contributor_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                        name = p.Name,
+                        career = p.Career.Career_Name,
+                        faculty = p.Faculty.Faculty_Name,
+                        email = p.Email,
+                        academicPeriod = p.ContributionPlan.AcademicPeriod.Academic_Period_Name
                     })
                     .ToListAsync();
 
@@ -66,21 +67,22 @@ namespace backendfepon.Controllers
             try
             {
                 var contributor = await _context.Contributors
-                    .Include(t => t.Transaction)
                     .Include(p => p.State)
                     .Include(t => t.ContributionPlan)
+                     .ThenInclude(cp => cp.AcademicPeriod)
                     .Where(p => p.State_Id == Constants.DEFAULT_STATE && p.Contributor_Id == id)
                     .Select(p => new ContributorDTO
                     {
-                        Id = p.Contributor_Id,
-                        Plan = p.ContributionPlan.Name,
-                        State_id = p.State_Id,
-                        Price = p.ContributionPlan.Economic_Value.ToString(),
-                        Date = p.Contributor_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
-                        Name = p.Name,
-                        Career = p.Career.Career_Name,
-                        Faculty = p.Faculty.Faculty_Name,
-                        Email = p.Email,
+                        id = p.Contributor_Id,
+                        plan = p.ContributionPlan.Name,
+                        state_id = p.State_Id,
+                        price = p.ContributionPlan.Economic_Value,
+                        date = p.Contributor_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                        name = p.Name,
+                        career = p.Career.Career_Name,
+                        faculty = p.Faculty.Faculty_Name,
+                        email = p.Email,
+                        academicPeriod = p.ContributionPlan.AcademicPeriod.Academic_Period_Name
                     })
                     .FirstOrDefaultAsync();
 
@@ -96,45 +98,9 @@ namespace backendfepon.Controllers
                 return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible obtener los aportantes"));
             }
         }
-        /*
-        // POST: api/Contributor
-        [HttpPost]
-        public async Task<ActionResult<ContributorDTO>> PostContributor(CreateUpdateContributorDTO contributorDTO)
-        {
-            try
-            {
-                var plan = await _context.ContributionPlans.FirstOrDefaultAsync(p => p.Name == contributorDTO.Plan);
-                if (plan == null)
-                {
-                    return BadRequest(GenerateErrorResponse(400, "Nombre del plan no válido."));
-                }
-
-                var student = await _context.Students.FirstOrDefaultAsync(s => s.Email == contributorDTO.Email);
-                if (student == null)
-                {
-                    return BadRequest(GenerateErrorResponse(400, "Correo electrónico del estudiante no válido."));
-                }
-
-                var contributor = _mapper.Map<Contributor>(contributorDTO);
-                contributor.State_Id= Constants.DEFAULT_STATE;
-                contributor.Plan_Id = plan.Plan_Id;
-                //contributor.Student_Id = student.Student_Id;
-
-                _context.Contributors.Add(contributor);
-                await _context.SaveChangesAsync();
-
-                var createdContributorDTO = _mapper.Map<ContributorDTO>(contributor);
-
-                return CreatedAtAction(nameof(GetContributor), new { id = contributor.Contributor_Id }, createdContributorDTO);
-            }
-            catch
-            {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear aportantes"));
-            }
-        }
-        */
 
         [HttpPost]
+        [Authorize(Policy = "OrganizationalOnly")]
         public async Task<ActionResult<ContributorDTO>> PostContributor(CreateUpdateContributorDTO contributorDTO)
         {
             try
@@ -151,95 +117,40 @@ namespace backendfepon.Controllers
                     return BadRequest(GenerateErrorResponse(400, "Carrera no válida."));
                 }
 
-                var plan = await _context.ContributionPlans.FirstOrDefaultAsync(p => p.Name == contributorDTO.Plan);
+                var plan = await _context.ContributionPlans
+                    .Include(p => p.AcademicPeriod)  // Ensure AcademicPeriod is included
+                    .FirstOrDefaultAsync(p => p.Name == contributorDTO.Plan);
                 if (plan == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Plan no válido."));
                 }
 
+
                 var contributor = _mapper.Map<Contributor>(contributorDTO);
-
-                // Verifica que el mapeo sea correcto
-                _logger.LogInformation($"Mapped Contributor: {contributor.Name}, {contributor.Email}, {contributor.Contributor_Date}");
-
                 contributor.Faculty_Id = faculty.Faculty_Id;
                 contributor.Career_Id = career.Career_Id;
                 contributor.Plan_Id = plan.Plan_Id;
                 contributor.State_Id = Constants.DEFAULT_STATE;
-                contributor.Transaction_Id = 4;  // revisar esta transaccion
 
                 _context.Contributors.Add(contributor);
                 await _context.SaveChangesAsync();
 
                 var createdContributorDTO = _mapper.Map<ContributorDTO>(contributor);
 
+                // Ensure the AcademicPeriod is included in the DTO
+                createdContributorDTO.academicPeriod = plan.AcademicPeriod?.Academic_Period_Name;
+
                 return CreatedAtAction(nameof(GetContributor), new { id = contributor.Contributor_Id }, createdContributorDTO);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating contributor");
                 return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible crear el contribuyente."));
             }
         }
 
 
-        /*
-        // PUT: api/Contributor/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutContributor(int id, CreateUpdateContributorDTO updatedContributor)
-        {
-            try
-            {
-                var contributor = await _context.Contributors.FindAsync(id);
-                if (contributor == null)
-                {
-                    return BadRequest(GenerateErrorResponse(400, "ID del contribuyente no válido."));
-                }
-
-                var plan = await _context.ContributionPlans.FirstOrDefaultAsync(p => p.Name == updatedContributor.Name);
-                if (plan == null)
-                {
-                    return BadRequest(GenerateErrorResponse(400, "Nombre del plan no válido."));
-                }
-
-                var student = await _context.Students.FirstOrDefaultAsync(s => s.Email == updatedContributor.Email);
-                if (student == null)
-                {
-                    return BadRequest(GenerateErrorResponse(400, "Correo electrónico del estudiante no válido."));
-                }
-
-                _mapper.Map(updatedContributor, contributor);
-                contributor.Plan_Id = plan.Plan_Id;
-                //contributor.Student_Id = student.Student_Id;
-
-                _context.Entry(contributor).State = EntityState.Modified;
-
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ContributorExists(id))
-                    {
-                        return NotFound(GenerateErrorResponse(404, "Aportante no encontrado."));
-                    }
-                    else
-                    {
-                        return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error de concurrencia."));
-                    }
-                }
-
-                return NoContent();
-            }
-            catch
-            {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar los aportantes"));
-            }
-        }
-        */
-
-        [HttpPut("{id}")]
+        [Authorize(Policy = "OrganizationalOnly")]
         public async Task<IActionResult> PutContributor(int id, CreateUpdateContributorDTO contributorDTO)
         {
             try
@@ -262,7 +173,9 @@ namespace backendfepon.Controllers
                     return BadRequest(GenerateErrorResponse(400, "Carrera no válida."));
                 }
 
-                var plan = await _context.ContributionPlans.FirstOrDefaultAsync(p => p.Name == contributorDTO.Plan);
+                var plan = await _context.ContributionPlans
+                   .Include(p => p.AcademicPeriod)  // Ensure AcademicPeriod is included
+                   .FirstOrDefaultAsync(p => p.Name == contributorDTO.Plan);
                 if (plan == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Plan no válido."));
@@ -272,7 +185,6 @@ namespace backendfepon.Controllers
                 oldContributor.Faculty_Id = faculty.Faculty_Id;
                 oldContributor.Career_Id = career.Career_Id;
                 oldContributor.Plan_Id = plan.Plan_Id;
-                oldContributor.Transaction_Id = 5; //revisar transaccion
 
                 _context.Entry(oldContributor).State = EntityState.Modified;
 
@@ -292,41 +204,22 @@ namespace backendfepon.Controllers
                     }
                 }
 
-                return NoContent();
+                // Map the updated contributor to a DTO
+                var updatedContributorDTO = _mapper.Map<ContributorDTO>(oldContributor);
+                updatedContributorDTO.academicPeriod = plan.AcademicPeriod?.Academic_Period_Name;
+
+                return Ok(updatedContributorDTO);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating contributor");
+
                 return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar el contribuyente."));
-            }
-        }
-
-
-        // DELETE: api/Contributor/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteContributor(int id)
-        {
-            try
-            {
-                var contributor = await _context.Contributors.FindAsync(id);
-                if (contributor == null)
-                {
-                    return NotFound(GenerateErrorResponse(404, "Aportante no encontrado."));
-                }
-
-                _context.Contributors.Remove(contributor);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
-            }
-            catch
-            {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar el aportante"));
             }
         }
 
         // PATCH: api/Products/5
         [HttpPatch("{id}")]
+        [Authorize(Policy = "OrganizationalOnly")]
         public async Task<IActionResult> PatchContributorState(int id)
         {
             try

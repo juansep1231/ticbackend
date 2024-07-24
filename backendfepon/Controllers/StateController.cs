@@ -2,6 +2,7 @@
 using backendfepon.DTOs.EventExpenseDTO;
 using backendfepon.DTOs.SemesterDTOs;
 using backendfepon.DTOs.StateDTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class StateController : BaseController
     {
         private readonly ApplicationDbContext _context;

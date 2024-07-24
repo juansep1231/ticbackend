@@ -6,6 +6,7 @@ using backendfepon.DTOs.ProductDTOs;
 using backendfepon.DTOs.TransactionDTOs;
 using backendfepon.Models;
 using backendfepon.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 //using Microsoft.VisualBasic;
@@ -14,17 +15,18 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FinantialRequestController : BaseController
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-       // private readonly ILogger _logger;
+        // private readonly ILogger _logger;
 
         public FinantialRequestController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-           // _logger = logger;
+            // _logger = logger;
         }
 
         // GET: api/FinantialRequest
@@ -39,7 +41,7 @@ namespace backendfepon.Controllers
            .Select(p => new FinantialRequestDTO
            {
                id = p.Request_Id,
-              eventName= p.Events.Title,
+               eventName = p.Events.Title,
                requestStatusName = p.Financial_Request_State.State_Description,
                value = p.Value,
                reason = p.Reason
@@ -80,6 +82,7 @@ namespace backendfepon.Controllers
 
         // POST: api/FinancialRequest
         [HttpPost]
+        [Authorize(Policy = "EventOnly")]
         public async Task<ActionResult<FinantialRequestDTO>> PostFinancialRequest(CreateUpdateFinantialRequestDTO financialRequestDTO)
         {
             try
@@ -88,14 +91,14 @@ namespace backendfepon.Controllers
                 var requestStatus = await _context.FinancialRequestStates.FirstOrDefaultAsync(rs => rs.State_Description == financialRequestDTO.requestStatusName);
                 if (requestStatus == null)
                 {
-                    return BadRequest("Invalid Request Status name.");
+                    return BadRequest("Nombre de estado invalido.");
                 }
 
                 // Find the Event based on the name
                 var findEvent = await _context.Events.FirstOrDefaultAsync(e => e.Title == financialRequestDTO.eventName);
                 if (findEvent == null)
                 {
-                    return BadRequest("Invalid event name.");
+                    return BadRequest("Nombre de evento ivalido.");
                 }
 
                 // Map the DTO to the entity
@@ -125,6 +128,7 @@ namespace backendfepon.Controllers
 
         // PUT: api/FinancialRequests/5
         [HttpPut("{id}")]
+        [Authorize(Policy = "EventOnly")]
         public async Task<IActionResult> PutFinantialRequest(int id, CreateUpdateFinantialRequestDTO updatedFinantialRequest)
         {
             var financialRequest = await _context.FinancialRequests.FindAsync(id);
@@ -141,7 +145,7 @@ namespace backendfepon.Controllers
                 return BadRequest("Invalid Request Status name.");
             }
 
-            var findEvent = await _context.Events.FirstOrDefaultAsync(rs => rs.Title== updatedFinantialRequest.eventName);
+            var findEvent = await _context.Events.FirstOrDefaultAsync(rs => rs.Title == updatedFinantialRequest.eventName);
             if (requestStatus == null)
             {
                 return BadRequest("Invalid event name.");
@@ -149,7 +153,6 @@ namespace backendfepon.Controllers
 
             // Map the updated properties to the existing financial request
             _mapper.Map(updatedFinantialRequest, financialRequest);
-           // financialRequest.Administrative_Member_Id = administrativeMember.Administrative_Member_Id; // Set the Administrative_Member_Id manually
             financialRequest.Request_Status_Id = requestStatus.Request_State_Id; // Set the Request_Status_Id manually
 
             _context.Entry(financialRequest).State = EntityState.Modified;
@@ -158,7 +161,7 @@ namespace backendfepon.Controllers
 
             //_mapper.Map(updatedEvent, existingEvent);
             findEvent.Financial_Request_Id = id;
-            findEvent.Budget_Status= updatedFinantialRequest.requestStatusName;
+            findEvent.Budget_Status = updatedFinantialRequest.requestStatusName;
 
             _context.Entry(findEvent).State = EntityState.Modified;
 
@@ -179,71 +182,6 @@ namespace backendfepon.Controllers
                     throw;
                 }
             }
-
-            return NoContent();
-        }
-        
-
-
-        /*
-        [HttpPut("/updateFinantial/{id}")]
-        public async Task<IActionResult> UpdateEventPermission(int id, CreateUpdateFinantialRequestDTO permissionDTO)
-        {
-            try
-            {
-                var status = await _context.FinancialRequestStates.FirstOrDefaultAsync(s => s.State_Description == permissionDTO.requestStatusName);
-                // Crear un nuevo objeto Permission con los datos del DTO
-                var newPermission = new FinancialRequest
-                {
-                    Request_Status_Id = status.Request_State_Id,
-                    Value = permissionDTO.value,
-                    Reason = permissionDTO.reason,
-                    // Asignar otros campos según sea necesario
-                };
-
-                // Agregar el nuevo Permission a la base de datos
-                _context.FinancialRequests.Add(newPermission);
-                await _context.SaveChangesAsync();
-
-                // Obtener el ID del nuevo Permission generado
-                var newPermissionId = await _context.FinancialRequests.FirstOrDefaultAsync(s => s.Reason == permissionDTO.reason);
-
-                // Buscar el evento que se va a actualizar
-                var existingEvent = await _context.Events.FindAsync(id);
-                if (existingEvent == null)
-                {
-                    return BadRequest(GenerateErrorResponse(400, "ID del evento no válido."));
-                }
-
-                // Asignar el nuevo Permission_Id al evento existente
-                existingEvent.Financial_Request_Id = newPermissionId.Request_Id;
-
-                // Guardar los cambios en el evento
-                _context.Entry(existingEvent).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible actualizar el evento con nuevo permiso", ex));
-            }
-        }*/
-        
-        
-
-        // DELETE: api/FinantialRequest/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFinantialRequest(int id)
-        {
-            var finantialRequest = await _context.FinancialRequests.FindAsync(id);
-            if (finantialRequest == null)
-            {
-                return NotFound();
-            }
-
-            _context.FinancialRequests.Remove(finantialRequest);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }

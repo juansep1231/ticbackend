@@ -4,6 +4,7 @@ using backendfepon.Data;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.DTOs.TransactionDTOs;
 using backendfepon.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class TransactionController : BaseController
     {
         private readonly ApplicationDbContext _context;
@@ -70,7 +72,7 @@ namespace backendfepon.Controllers
            {
                id = p.Transaction_Id,
                transactionType = p.TransactionType.Transaction_Type_Name,
-               date = p.Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+               date = p.Date.ToString ("dd/MM/yyyy", CultureInfo.InvariantCulture),
                originAccount = cy.DecryptStringFromBytes_Aes(p.OriginAccount.Account_Name, _key, _iv),
                destinationAccount = cy.DecryptStringFromBytes_Aes(p.DestinationAccount.Account_Name, _key, _iv),
                value = p.Value,
@@ -87,6 +89,7 @@ namespace backendfepon.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "FinancialOnly")]
         public async Task<ActionResult<TransactionDTO>> PostTransaction(CreateUpdateTransactionDTO transactionDTO)
         {
 
@@ -137,6 +140,8 @@ namespace backendfepon.Controllers
                 await _context.SaveChangesAsync();
 
                 var createdTransactionDTO = _mapper.Map<TransactionDTO>(transaction);
+                createdTransactionDTO.originAccount = cy.DecryptStringFromBytes_Aes(originAccount.Account_Name, _key, _iv);
+                createdTransactionDTO.destinationAccount = cy.DecryptStringFromBytes_Aes(destinationAccount.Account_Name, _key, _iv);
                 return CreatedAtAction(nameof(GetTransaction), new { id = transaction.Transaction_Id }, createdTransactionDTO);
             }
             catch (DbUpdateException ex)

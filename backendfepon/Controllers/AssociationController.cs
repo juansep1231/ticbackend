@@ -4,6 +4,7 @@ using backendfepon.DTOs.AssociationDTOs;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.Models;
 using backendfepon.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -82,6 +83,7 @@ namespace backendfepon.Controllers
 
         // POST: api/Association
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<ActionResult<AssociationDTO>> PostAssociation(CreateUpdateAssociationDTO associationDTO)
         {
             try
@@ -116,6 +118,7 @@ namespace backendfepon.Controllers
 
         // PUT: api/Association/5
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> PutAssociation(int id, CreateUpdateAssociationDTO updatedAssociation)
         {
             try
@@ -156,6 +159,7 @@ namespace backendfepon.Controllers
 
         // PATCH: api/Products/5
         [HttpPatch("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> PatchProductState(int id)
         {
             try

@@ -2,6 +2,7 @@
 using backendfepon.DTOs.AcademicPeriodDTOs;
 using backendfepon.DTOs.AccountTypeDTOs;
 using backendfepon.DTOs.StateDTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace backendfepon.Controllers
 
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AccountTypeController : BaseController
     {
         private readonly ApplicationDbContext _context;

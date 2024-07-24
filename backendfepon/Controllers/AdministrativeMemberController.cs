@@ -5,6 +5,7 @@ using backendfepon.DTOs.AssociationDTOs;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.Models;
 using backendfepon.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -17,13 +18,11 @@ namespace backendfepon.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        private readonly ILogger<EventController> _logger;
 
-        public AdministrativeMembersController(ApplicationDbContext context, IMapper mapper, ILogger<EventController> logger)
+        public AdministrativeMembersController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _logger = logger;
         }
 
         // GET: api/AdministrativeMembers
@@ -96,45 +95,10 @@ namespace backendfepon.Controllers
                 return StatusCode(500, GenerateErrorResponse(500, "\"Ocurrió un error interno del servidor, no es posible obtenet el miembro administrativo"));
             }
         }
-        /*
-        // POST: api/AdministrativeMembers
-        [HttpPost]
-        public async Task<ActionResult<AdministrativeMemberDTO>> PostAdministrativeMember(CreateUpdateAdministrativeMemberDTO administrativeMemberDTO)
-        {
-            try
-            {
-                var student = await _context.Students.FirstOrDefaultAsync(s => s.Email == administrativeMemberDTO.Student_Email);
-                if (student == null)
-                {
-                    return BadRequest(GenerateErrorResponse(400, "Correo electrónico del estudiante no válido."));
-                }
-
-                var role = await _context.Roles.FirstOrDefaultAsync(s => s.Role_Name == administrativeMemberDTO.Member_Role);
-                if (role == null)
-                {
-                    return BadRequest(GenerateErrorResponse(400, "Rol no válido."));
-                }
-
-                var administrativeMember = _mapper.Map<AdministrativeMember>(administrativeMemberDTO);
-                //administrativeMember.Student_Id = student.Student_Id;
-                administrativeMember.Role_Id = role.Role_Id;
-                administrativeMember.State_Id = Constants.DEFAULT_STATE;
-
-                _context.AdministrativeMembers.Add(administrativeMember);
-                await _context.SaveChangesAsync();
-
-                var createdAdministrativeMemberDTO = _mapper.Map<AdministrativeMemberDTO>(administrativeMember);
-
-                return CreatedAtAction(nameof(GetAdministrativeMember), new { id = administrativeMember.Administrative_Member_Id }, createdAdministrativeMemberDTO);
-            }
-            catch
-            {
-                return StatusCode(500, GenerateErrorResponse(500, "\"Ocurrió un error interno del servidor, no es posible crear el miembro administrativo"));
-            }
-        }
-        */
+ 
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<ActionResult<AdministrativeMemberDTO>> PostAdministrativeMember(CreateUpdateAdministrativeMemberDTO administrativeMemberDTO)
         {
             try
@@ -171,7 +135,6 @@ namespace backendfepon.Controllers
 
                 // Mapear el DTO a la entidad del modelo
                 var administrativeMember = _mapper.Map<AdministrativeMember>(administrativeMemberDTO);
-                _logger.LogInformation("////////////////////////////////////");
                 //administrativeMember.Birth_Date = DateTime.Now;
                 administrativeMember.Faculty_Id = faculty.Faculty_Id;
                 administrativeMember.Career_Id = career.Career_Id;
@@ -201,6 +164,7 @@ namespace backendfepon.Controllers
 
         // PUT: api/AdministrativeMembers/5
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> PutAdministrativeMember(int id, CreateUpdateAdministrativeMemberDTO administrativeMemberDTO)
         {
             try
@@ -267,35 +231,10 @@ namespace backendfepon.Controllers
             }
         }
 
-    
-
-
-        // DELETE: api/AdministrativeMembers/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAdministrativeMember(int id)
-        {
-            try
-            {
-                var administrativeMember = await _context.AdministrativeMembers.FindAsync(id);
-                if (administrativeMember == null)
-                {
-                    return NotFound(GenerateErrorResponse(404, "Miembro administrativo no encontrado."));
-                }
-
-                _context.AdministrativeMembers.Remove(administrativeMember);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
-            }
-            catch
-            {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar el miembro administrativo"));
-            }
-        }
-
 
         // PATCH: api/Products/5
         [HttpPatch("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> PatchProductState(int id)
         {
             try

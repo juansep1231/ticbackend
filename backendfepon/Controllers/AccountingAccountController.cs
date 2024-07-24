@@ -4,6 +4,7 @@ using backendfepon.Data;
 using backendfepon.DTOs.AccountingAccountDTOs;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -18,6 +19,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AccountingAccountController : BaseController
     {
         private readonly ApplicationDbContext _context;
@@ -37,6 +39,7 @@ namespace backendfepon.Controllers
 
         // GET: api/AccountingAccount
         [HttpGet]
+        
         public async Task<ActionResult<IEnumerable<AccountingAccountDTO>>> GetAccountingAccounts()
         {
             try
@@ -129,6 +132,7 @@ namespace backendfepon.Controllers
 
         // POST: api/AccountingAccount
         [HttpPost]
+        [Authorize(Policy = "FinancialOnly")]
         public async Task<ActionResult<AccountingAccountDTO>> PostAccountingAccount(CreateUpdateAccountingAccountDTO accounntingAccountDTO)
         {
             try
@@ -177,55 +181,9 @@ namespace backendfepon.Controllers
 
         }
 
-        // PUT: api/AccountingAccount/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAccountingAccount(int id, CreateUpdateAccountingAccountDTO updatedAccountingAccount)
-        {
-            try
-            {
-                CypherAES cy = new CypherAES();
-                var accountingAccount = await _context.CAccountinngAccounts.FindAsync(id);
-
-                if (accountingAccount == null)
-                {
-                    return BadRequest(GenerateErrorResponse(400, "ID de cuenta contable no válido."));
-                }
-
-                //accountingAccount.Account_Type_Id = updatedAccountingAccount.Account_Type_Id;
-                accountingAccount.Account_Name = cy.EncryptStringToBytes_AES(updatedAccountingAccount.accountName, _key, _iv);
-                accountingAccount.Current_Value = cy.EncryptStringToBytes_AES(updatedAccountingAccount.currentValue.ToString(), _key, _iv);
-                accountingAccount.Initial_Balance_Date = cy.EncryptStringToBytes_AES(updatedAccountingAccount.date.ToString(), _key, _iv);
-                accountingAccount.Initial_Balance = cy.EncryptStringToBytes_AES(updatedAccountingAccount.initialBalance.ToString(), _key, _iv);
-                accountingAccount.Accounting_Account_Status = cy.EncryptStringToBytes_AES("INACTIVO".ToString(), _key, _iv);
-
-                _context.Entry(accountingAccount).State = EntityState.Modified;
-
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AccountingAccountExists(id))
-                    {
-                        return NotFound(GenerateErrorResponse(404, "Cuenta contable no encontrada."));
-                    }
-                    else
-                    {
-                        return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error de concurrencia."));
-                    }
-                }
-
-                return NoContent();
-            }
-            catch
-            {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor."));
-            }
-        }
-
         // PATCH: api/AccountingAccount/5
         [HttpPatch("{id}")]
+        [Authorize(Policy = "FinancialOnly")]
         public async Task<IActionResult> PatchAccountingAccountState(int id, [FromBody] string newStateId)
         {
             try

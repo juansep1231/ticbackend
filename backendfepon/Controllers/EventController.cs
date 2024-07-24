@@ -4,6 +4,7 @@ using backendfepon.DTOs.AssociationDTOs;
 using backendfepon.DTOs.EventDTOs;
 using backendfepon.Models;
 using backendfepon.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -12,6 +13,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EventController : BaseController
     {
         private readonly ApplicationDbContext _context;
@@ -38,6 +40,7 @@ namespace backendfepon.Controllers
                         id = p.Event_Id,
                         title = p.Title,
                         status= p.State.Event_State_Name,
+                        stateid = p.Event_Status_Id,
                         description = p.Description,
                         startDate = p.Start_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
                         endDate = p.End_Date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
@@ -71,6 +74,7 @@ namespace backendfepon.Controllers
                     .Select(p => new EventDTO
                     {
                         id = p.Event_Id,
+                        stateid = p.Event_Status_Id,
                         title = p.Title,
                         status = p.State.Event_State_Name,
                         description = p.Description,
@@ -97,6 +101,7 @@ namespace backendfepon.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "EventOnly")]
         public async Task<ActionResult<EventDTO>> PostEvent(CreateUpdateEventDTO eventDTO)
         {
             try
@@ -117,7 +122,8 @@ namespace backendfepon.Controllers
                 {
                     Request_Status_Id = budgetStatus.Request_State_Id,
                     Reason = "",
-                    Value = eventDTO.budget
+                    Value = eventDTO.budget,
+                    State_Id=Constants.DEFAULT_STATE  
                 };
 
                 // Agregar el nuevo FinancialRequest a la base de datos y guardar cambios para obtener el Request_Id
@@ -129,6 +135,7 @@ namespace backendfepon.Controllers
                 newEvent.State_Id = eventState.Event_State_Id;
                 newEvent.Financial_Request_Id = newFinancialRequest.Request_Id;
                 newEvent.Permission_Id = 1;
+                newEvent.Event_Status_Id = Constants.DEFAULT_STATE;
 
                 // Agregar el nuevo evento a la base de datos
                 _context.Events.Add(newEvent);
@@ -147,6 +154,7 @@ namespace backendfepon.Controllers
 
         // PUT: api/Event/5
         [HttpPut("{id}")]
+        [Authorize(Policy = "EventOnly")]
         public async Task<IActionResult> PutEvent(int id, CreateUpdateEventDTO updatedEvent)
         {
             try
@@ -205,33 +213,9 @@ namespace backendfepon.Controllers
             }
         }
 
-        // DELETE: api/Event/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEvent(int id)
-        {
-            try
-            {
-                var oldEvent = await _context.Events.FindAsync(id);
-                if (oldEvent == null)
-                {
-                    return NotFound(GenerateErrorResponse(404, "Evento no encontrado."));
-                }
-
-                _context.Events.Remove(oldEvent);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
-            }
-            catch
-            {
-                return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error interno del servidor, no es posible eliminar el evento"));
-            }
-        }
-
-
-
         // PATCH: api/Products/5
         [HttpPatch("{id}")]
+        [Authorize(Policy = "EventOnly")]
         public async Task<IActionResult> PatchEventState(int id)
         {
             try
@@ -256,7 +240,7 @@ namespace backendfepon.Controllers
                 {
                     if (!EventExists(id))
                     {
-                        return NotFound(GenerateErrorResponse(404, "Producto no encontrado."));
+                        return NotFound(GenerateErrorResponse(404, "Eneo no encontrado."));
                     }
                     else
                     {

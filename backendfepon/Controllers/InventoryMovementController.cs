@@ -5,6 +5,7 @@ using backendfepon.DTOs.InventoryMovementTypeDTO;
 using backendfepon.DTOs.ProductDTOs;
 using backendfepon.Models;
 using backendfepon.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -14,6 +15,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class InventoryMovementController : BaseController
     {
         private readonly ApplicationDbContext _context;
@@ -93,6 +95,7 @@ namespace backendfepon.Controllers
 
         // POST: api/InventoryMovement
         [HttpPost]
+        [Authorize(Policy = "InventoryOnly")]
         public async Task<ActionResult<InventoryMovementDTO>> PostInventoryMovement(CreateUpdateInventoryMovementDTO inventoryMovementDTO)
         {
             try
@@ -109,16 +112,24 @@ namespace backendfepon.Controllers
                     return BadRequest(GenerateErrorResponse(400, "Nombre del tipo de movimiento de inventario no válido."));
                 }
 
+
                 if (ProductExist(product.Product_Id))
                 {
+                    
+
                     if (inventoryMovementType.Movement_Type_Id==1)
                     {
                         product.Quantity += inventoryMovementDTO.quantity;
                     }
-                    else
+                    else if (inventoryMovementType.Movement_Type_Id > 1 && product.Quantity>=0  && (product.Quantity - inventoryMovementDTO.quantity >= 0))
                     {
                         product.Quantity -= inventoryMovementDTO.quantity;
                     }
+                    else
+                    {
+                        return StatusCode(500, GenerateErrorResponse(400, "el numero del producto es 0 no se puede reducir mas."));
+                    }
+                    
 
                     _context.Entry(product).State = EntityState.Modified;
                     try
@@ -165,6 +176,7 @@ namespace backendfepon.Controllers
 
         // PUT: api/InventoryMovement/5
         [HttpPut("{id}")]
+        [Authorize(Policy = "InventoryOnly")]
         public async Task<IActionResult> PutInventoryMovement(int id, CreateUpdateInventoryMovementDTO updatedInventoryMovement)
         {
             try
@@ -185,6 +197,36 @@ namespace backendfepon.Controllers
                 if (inventoryMovementType == null)
                 {
                     return BadRequest(GenerateErrorResponse(400, "Nombre del tipo de movimiento de inventario no válido."));
+                }
+
+
+                if (ProductExist(product.Product_Id))
+                {
+
+
+                    if (inventoryMovementType.Movement_Type_Id == 1)
+                    {
+                        product.Quantity += updatedInventoryMovement.quantity;
+                    }
+                    else if (inventoryMovementType.Movement_Type_Id > 1 && product.Quantity >= 0 && (product.Quantity - updatedInventoryMovement.quantity >= 0))
+                    {
+                        product.Quantity -= updatedInventoryMovement.quantity;
+                    }
+                    else
+                    {
+                        return StatusCode(500, GenerateErrorResponse(400, "el numero del producto es 0 no se puede reducir mas."));
+                    }
+
+
+                    _context.Entry(product).State = EntityState.Modified;
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        return StatusCode(500, GenerateErrorResponse(500, "Ocurrió un error de concurrencia."));
+                    }
                 }
 
                 _mapper.Map(updatedInventoryMovement, inventoryMovement);
@@ -230,6 +272,7 @@ namespace backendfepon.Controllers
 
         // DELETE: api/InventoryMovement/5
         [HttpDelete("{id}")]
+        [Authorize(Policy = "InventoryOnly")]
         public async Task<IActionResult> DeleteInventoryMovement(int id)
         {
             try
@@ -251,6 +294,7 @@ namespace backendfepon.Controllers
             }
         }
         [HttpPatch("{id}")]
+        [Authorize(Policy = "InventoryOnly")]
         public async Task<IActionResult> PatchInventoryMovementState(int id)
         {
             try

@@ -1,5 +1,6 @@
 ﻿using backendfepon.Data;
 using backendfepon.DTOs.StateDTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace backendfepon.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class TransactionTypeController : BaseController
     {
         private readonly ApplicationDbContext _context;
