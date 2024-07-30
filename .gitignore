@@ -9,3 +9,4 @@ obj
 node_modules
 
 /CloudERPFEPON/CloudERPFEPON.csproj
+backendfepon/Secrets/*
